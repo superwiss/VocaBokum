@@ -34,6 +34,21 @@ export function useWords() {
     return words.filter((w) => !w.addedDate.startsWith(today))
   }
 
+  const getWordsByDateRange = (startDate: string, endDate: string): Word[] => {
+    return words.filter((w) => {
+      const wordDate = w.addedDate.split('T')[0]
+      return wordDate >= startDate && wordDate <= endDate
+    })
+  }
+
+  const getLatestWordDate = (): string => {
+    if (words.length === 0) {
+      return new Date().toISOString().split('T')[0]
+    }
+    const dates = words.map((w) => w.addedDate.split('T')[0])
+    return dates.sort().reverse()[0]
+  }
+
   const updateStats = (wordId: string, type: QuestionType, isCorrect: boolean) => {
     dispatch({ type: 'UPDATE_STATS', payload: { wordId, type, isCorrect } })
   }
@@ -49,6 +64,8 @@ export function useWords() {
     deleteWord,
     getWordById,
     getWordsByDate,
+    getWordsByDateRange,
+    getLatestWordDate,
     getTodayWords,
     getPastWords,
     updateStats,

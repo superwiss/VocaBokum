@@ -4,8 +4,7 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { path: '/', label: '홈' },
   { path: '/words', label: '단어 관리' },
-  { path: '/quiz', label: '오늘 시험' },
-  { path: '/review', label: '복습' },
+  { path: '/quiz', label: '시험' },
   { path: '/import-export', label: '데이터 관리' },
   { path: '/admin', label: '통계' },
 ]

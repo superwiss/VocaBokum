@@ -47,11 +47,12 @@
 - [x] App.tsx에 라우팅 설정
   - [x] / (Home/Dashboard)
   - [x] /words (단어 관리)
-  - [x] /quiz (오늘 단어 시험)
-  - [x] /review (복습)
+  - [x] /quiz (시험 - 날짜 범위 선택 가능, ReviewPage 사용)
+  - [x] /review (/quiz로 리다이렉트)
   - [x] /import-export (데이터 관리)
   - [x] /admin (통계)
 - [x] Navigation 컴포넌트 생성
+- [x] /quiz 라우트를 ReviewPage로 변경 (오늘 시험과 복습 통합)
 
 ---
 
@@ -272,9 +273,35 @@
   - [x] 피드백 화면에서 엔터키로 다음 문제 이동
   - [x] 즉시 채점 모드에서 실시간 점수 표시 (현재 점수 / 푼 문제 수)
 
+### 4.8 시험 기능 통합 (오늘 시험 + 복습 통합)
+- [x] `/components/quiz/DateRangeSelector.tsx` 생성
+  - [x] 시작 날짜 선택 input
+  - [x] 종료 날짜 선택 input
+  - [x] 기본값: 가장 최근 단어 등록 날짜
+  - [x] 선택한 날짜 범위의 단어 개수 표시
+  - [x] 사용 팁 안내 메시지
+- [x] `/hooks/useWords.ts` 업데이트
+  - [x] `getWordsByDateRange(startDate, endDate)` 함수 추가
+  - [x] `getLatestWordDate()` 함수 추가
+- [x] `/pages/ReviewPage.tsx`를 통합 시험 페이지로 업데이트
+  - [x] 페이지 제목을 "복습" → "시험"으로 변경
+  - [x] DateRangeSelector 컴포넌트 통합
+  - [x] 날짜 범위 상태 관리
+  - [x] 선택한 날짜 범위의 단어 필터링
+  - [x] 문제 수 제한 옵션 추가 (체크박스로 선택)
+  - [x] 문제 수 제한 없을 때: 모든 단어 * 선택된 유형
+  - [x] 문제 수 제한 있을 때: 가중치 기반 랜덤 선택
+- [x] App.tsx 라우팅 업데이트
+  - [x] /quiz → ReviewPage 연결
+  - [x] /review → /quiz로 리다이렉트
+  - [x] QuizPage import 제거
+- [x] Navigation 컴포넌트 업데이트
+  - [x] "오늘 단어 시험" 메뉴 제거
+  - [x] "복습" 메뉴를 "시험"으로 변경하고 /quiz로 연결
+
 ---
 
-## Phase 5: 복습 시스템
+## Phase 5: 복습 시스템 (Phase 4.8로 통합됨)
 
 ### 5.1 복습 단어 선택 알고리즘
 - [x] `/utils/quizGenerator.ts`에 `generateReviewQuiz` 구현

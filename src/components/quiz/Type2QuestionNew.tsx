@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,6 +15,25 @@ interface Type2QuestionNewProps {
 export default function Type2QuestionNew({ question, onSubmit }: Type2QuestionNewProps) {
   const [answer, setAnswer] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
+
+  // 문제 진입 시 자동으로 발음 재생
+  useEffect(() => {
+    const playAudio = async () => {
+      try {
+        if (!speechService.isSupported()) {
+          return
+        }
+        setIsPlaying(true)
+        await speechService.playWord(question.word.word, question.word.audioUrl)
+      } catch (error) {
+        // 자동 재생 실패 시 조용히 처리 (사용자가 수동으로 재생 버튼 클릭 가능)
+        console.error('Auto-play failed:', error)
+      } finally {
+        setIsPlaying(false)
+      }
+    }
+    playAudio()
+  }, [question.id, question.word.word, question.word.audioUrl])
 
   const handlePlayPronunciation = async () => {
     try {

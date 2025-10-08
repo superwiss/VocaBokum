@@ -25,7 +25,7 @@ export default function ReviewPage() {
   const latestDate = getLatestWordDate()
   const [startDate, setStartDate] = useState(latestDate)
   const [endDate, setEndDate] = useState(latestDate)
-  const [selectedTypes, setSelectedTypes] = useState<QuestionType[]>([1, 2, 3, 4])
+  const [selectedTypes, setSelectedTypes] = useState<QuestionType[]>([2, 4])
   const [gradingMode, setGradingMode] = useState<GradingMode>('immediate')
   const [useQuestionLimit, setUseQuestionLimit] = useState(false)
   const [questionLimit, setQuestionLimit] = useState(10)
@@ -186,6 +186,11 @@ export default function ReviewPage() {
               wordCount={dateRangeWords.length}
             />
 
+            <QuizTypeSelector
+              selectedTypes={selectedTypes}
+              onTypesChange={setSelectedTypes}
+            />
+
             <Card>
               <CardHeader>
                 <CardTitle>문제 수 설정</CardTitle>
@@ -231,11 +236,6 @@ export default function ReviewPage() {
                 )}
               </CardContent>
             </Card>
-
-            <QuizTypeSelector
-              selectedTypes={selectedTypes}
-              onTypesChange={setSelectedTypes}
-            />
 
             <GradingModeSelector
               selectedMode={gradingMode}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWords } from '@/hooks/useWords'
 import { generateTodayQuiz } from '@/utils/quizGenerator'
 import { validateAnswer } from '@/utils/answerValidator'
@@ -10,17 +10,23 @@ import Type2Question from '@/components/quiz/Type2Question'
 import Type3Question from '@/components/quiz/Type3Question'
 import QuizResult from '@/components/quiz/QuizResult'
 import QuizTypeSelector from '@/components/quiz/QuizTypeSelector'
+import GradingModeSelector, { GradingMode } from '@/components/quiz/GradingModeSelector'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
 export default function QuizPage() {
   const { getTodayWords, updateStats } = useWords()
   const [selectedTypes, setSelectedTypes] = useState<QuestionType[]>([1, 2, 3, 4])
+  const [gradingMode, setGradingMode] = useState<GradingMode>('immediate')
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<QuizResultType[]>([])
   const [isStarted, setIsStarted] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
+  const [feedback, setFeedback] = useState<{
+    isCorrect: boolean
+    correctAnswer: string | string[]
+  } | null>(null)
 
   const todayWords = getTodayWords()
 
@@ -65,18 +71,60 @@ export default function QuizPage() {
           : currentQuestion.word.meanings,
     }
 
-    setResults([...results, result])
+    const newResults = [...results, result]
+    setResults(newResults)
 
-    // 통계 업데이트
-    updateStats(currentQuestion.wordId, currentQuestion.type, isCorrect)
+    // 즉시 채점 모드: 통계를 바로 업데이트하고 피드백 표시
+    if (gradingMode === 'immediate') {
+      updateStats(currentQuestion.wordId, currentQuestion.type, isCorrect)
+      setFeedback({
+        isCorrect,
+        correctAnswer: result.correctAnswer,
+      })
+    } else {
+      // 일괄 채점 모드: 바로 다음 문제로
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex(currentIndex + 1)
+      } else {
+        setIsCompleted(true)
+      }
+    }
+  }
 
-    // 다음 문제로 이동 또는 완료
+  const handleNext = () => {
+    setFeedback(null)
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1)
     } else {
       setIsCompleted(true)
     }
   }
+
+  // 피드백 화면에서 엔터키 처리
+  useEffect(() => {
+    if (!feedback) return
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleNext()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [feedback, handleNext])
+
+  // 시험 완료 시 일괄 채점 모드인 경우 통계 일괄 업데이트
+  useEffect(() => {
+    if (isCompleted && gradingMode === 'batch') {
+      results.forEach((result) => {
+        updateStats(result.wordId, result.type, result.isCorrect)
+      })
+    }
+  }, [isCompleted, gradingMode, results, updateStats])
+
+  // 현재 점수 계산
+  const currentScore = results.filter((r) => r.isCorrect).length
 
   // 시험 시작 전 화면
   if (!isStarted) {
@@ -121,6 +169,11 @@ export default function QuizPage() {
               onTypesChange={setSelectedTypes}
             />
 
+            <GradingModeSelector
+              selectedMode={gradingMode}
+              onModeChange={setGradingMode}
+            />
+
             <Button onClick={startQuiz} className="w-full" size="lg">
               시험 시작
             </Button>
@@ -157,9 +210,16 @@ export default function QuizPage() {
     <div className="container mx-auto p-6 max-w-2xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">오늘 단어 시험</h1>
-        <p className="text-muted-foreground">
-          문제 {currentIndex + 1} / {questions.length}
-        </p>
+        <div className="flex justify-between items-center">
+          <p className="text-muted-foreground">
+            문제 {currentIndex + 1} / {questions.length}
+          </p>
+          {gradingMode === 'immediate' && results.length > 0 && (
+            <p className="text-sm font-medium">
+              현재 점수: <span className="text-primary">{currentScore}</span> / {results.length}
+            </p>
+          )}
+        </div>
         <div className="w-full bg-muted h-2 rounded-full mt-2">
           <div
             className="bg-primary h-2 rounded-full transition-all"
@@ -168,17 +228,42 @@ export default function QuizPage() {
         </div>
       </div>
 
-      {currentQuestion.type === 1 && (
-        <Type1Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
-      )}
-      {currentQuestion.type === 2 && (
-        <Type2QuestionNew key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
-      )}
-      {currentQuestion.type === 3 && (
-        <Type2Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
-      )}
-      {currentQuestion.type === 4 && (
-        <Type3Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
+      {!feedback ? (
+        <>
+          {currentQuestion.type === 1 && (
+            <Type1Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
+          )}
+          {currentQuestion.type === 2 && (
+            <Type2QuestionNew key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
+          )}
+          {currentQuestion.type === 3 && (
+            <Type2Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
+          )}
+          {currentQuestion.type === 4 && (
+            <Type3Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
+          )}
+        </>
+      ) : (
+        <Card className={feedback.isCorrect ? 'border-green-500' : 'border-red-500'}>
+          <CardHeader>
+            <CardTitle className={feedback.isCorrect ? 'text-green-600' : 'text-red-600'}>
+              {feedback.isCorrect ? '✓ 정답입니다!' : '✗ 오답입니다'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">정답:</p>
+              <p className="text-lg font-medium">
+                {Array.isArray(feedback.correctAnswer)
+                  ? feedback.correctAnswer.join(', ')
+                  : feedback.correctAnswer}
+              </p>
+            </div>
+            <Button onClick={handleNext} className="w-full" size="lg">
+              {currentIndex < questions.length - 1 ? '다음 문제' : '결과 보기'}
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   )

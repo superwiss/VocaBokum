@@ -24,7 +24,8 @@ export default function Type1Question({ question, onSubmit }: Type1QuestionProps
       }
 
       setIsPlaying(true)
-      await speechService.speak(question.word.word)
+      // audioUrl이 있으면 실제 오디오 재생, 없으면 TTS 사용
+      await speechService.playWord(question.word.word, question.word.audioUrl)
     } catch (error) {
       toast.error('발음 재생에 실패했습니다.')
     } finally {

@@ -48,8 +48,8 @@ export default function WordInputForm() {
     setLoading(true)
 
     try {
-      // 발음만 API에서 가져오기
-      const pronunciation = await dictionaryService.fetchPronunciation(trimmedWord)
+      // 발음 및 오디오 URL API에서 가져오기
+      const result = await dictionaryService.fetchPronunciation(trimmedWord)
 
       // 한글 뜻은 쉼표로 분리
       const meaningsList = trimmedMeanings
@@ -66,7 +66,8 @@ export default function WordInputForm() {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         word: trimmedWord,
         meanings: meaningsList,
-        pronunciation: pronunciation,
+        pronunciation: result.pronunciation,
+        audioUrl: result.audioUrl,
         addedDate: new Date().toISOString(),
         stats: {
           type1Attempts: 0,

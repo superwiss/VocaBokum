@@ -1,10 +1,13 @@
 /**
- * Web Speech API를 사용한 TTS (Text-to-Speech) 서비스
+ * Web Speech API 및 Audio API를 사용한 음성 재생 서비스
+ * - audioUrl이 있으면 실제 오디오 파일 재생
+ * - audioUrl이 없으면 TTS 폴백
  */
 class SpeechService {
   private synthesis: SpeechSynthesis | null = null
   // @ts-ignore - currentUtterance는 speak, stop 메서드에서 상태 관리를 위해 사용됨
   private currentUtterance: SpeechSynthesisUtterance | null = null
+  private currentAudio: HTMLAudioElement | null = null
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -54,12 +57,65 @@ class SpeechService {
   }
 
   /**
+   * 단어 발음 재생 (audioUrl 우선, 없으면 TTS 폴백)
+   */
+  async playWord(text: string, audioUrl?: string): Promise<void> {
+    // 기존 재생 중지
+    this.stop()
+
+    if (audioUrl) {
+      // 실제 오디오 파일 재생
+      return this.playAudio(audioUrl)
+    } else {
+      // TTS 폴백
+      return this.speak(text)
+    }
+  }
+
+  /**
+   * 오디오 파일 재생
+   */
+  private playAudio(audioUrl: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.currentAudio = new Audio(audioUrl)
+
+        this.currentAudio.onended = () => {
+          this.currentAudio = null
+          resolve()
+        }
+
+        this.currentAudio.onerror = () => {
+          this.currentAudio = null
+          reject(new Error('오디오 재생 오류'))
+        }
+
+        this.currentAudio.play().catch((error) => {
+          this.currentAudio = null
+          reject(new Error(`오디오 재생 실패: ${error.message}`))
+        })
+      } catch (error) {
+        this.currentAudio = null
+        reject(error)
+      }
+    })
+  }
+
+  /**
    * 현재 재생 중인 음성 중지
    */
   stop(): void {
+    // TTS 중지
     if (this.synthesis && this.synthesis.speaking) {
       this.synthesis.cancel()
       this.currentUtterance = null
+    }
+
+    // 오디오 중지
+    if (this.currentAudio) {
+      this.currentAudio.pause()
+      this.currentAudio.currentTime = 0
+      this.currentAudio = null
     }
   }
 

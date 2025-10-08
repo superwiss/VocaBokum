@@ -73,6 +73,8 @@
       type2Correct: number;
       type3Attempts: number;
       type3Correct: number;
+      type4Attempts: number;
+      type4Correct: number;
     };
   }
   ```
@@ -81,7 +83,7 @@
   interface QuizQuestion {
     id: string;
     wordId: string;
-    type: 1 | 2 | 3;
+    type: 1 | 2 | 3 | 4;
     word: Word;
   }
 
@@ -168,35 +170,40 @@
 ### 4.1 시험 생성 로직
 - [x] `/utils/quizGenerator.ts` 생성
   - [x] `generateQuiz(words: Word[]): QuizQuestion[]`
-  - [x] 각 단어당 3가지 유형 생성 (총 N * 3 문제)
+  - [x] 각 단어당 4가지 유형 생성 (총 N * 4 문제)
   - [x] Fisher-Yates 알고리즘으로 랜덤 셔플
   - [x] 문제 ID 생성
 
 ### 4.2 답변 검증 로직
 - [x] `/utils/answerValidator.ts` 생성
-  - [x] `validateType1And2(userAnswer: string, meanings: string[]): boolean`
+  - [x] `validateType1And3(userAnswer: string, meanings: string[]): boolean`
     - [x] 문자열 정규화 (trim, toLowerCase, 특수문자 제거)
     - [x] meanings 배열 중 1개라도 일치하면 정답
     - [x] 부분 일치 허용 (포함 검사)
     - [x] 괄호, 쉼표, 마침표 등 특수문자 무시
     - [x] 공백(white space) 완전 제거
     - [x] 한국어 동사 어간 비교 (하다/시키다/되다 등 어미 차이 무시)
-  - [x] `validateType3(userAnswer: string, correctWord: string): boolean`
+  - [x] `validateType2And4(userAnswer: string, correctWord: string): boolean`
     - [x] 정확한 일치 검사
     - [x] 대소문자 무시 옵션
   - [ ] 테스트 케이스 작성
 
 ### 4.3 문제 컴포넌트
-- [x] `/components/quiz/Type1Question.tsx` 생성
+- [x] `/components/quiz/Type1Question.tsx` 생성 (유형 1: 발음 듣고 한글 뜻)
   - [x] 발음 재생 버튼
   - [x] "발음을 듣고 한글 뜻을 입력하세요" 안내
   - [x] 답변 입력 필드
   - [x] Enter 키 제출 지원
-- [x] `/components/quiz/Type2Question.tsx` 생성
+- [x] `/components/quiz/Type2QuestionNew.tsx` 생성 (유형 2: 발음 듣고 영어 단어)
+  - [x] 발음 재생 버튼
+  - [x] "발음을 듣고 영어 단어를 입력하세요" 안내
+  - [x] 답변 입력 필드
+  - [x] Enter 키 제출 지원
+- [x] `/components/quiz/Type2Question.tsx` (유형 3: 영어 단어 보고 한글 뜻)
   - [x] 영어 단어 표시 (큰 글씨)
   - [x] "한글 뜻을 입력하세요" 안내
   - [x] 답변 입력 필드
-- [x] `/components/quiz/Type3Question.tsx` 생성
+- [x] `/components/quiz/Type3Question.tsx` (유형 4: 한글 뜻 보고 영어 단어)
   - [x] 한글 뜻 표시
   - [x] "영어 단어를 입력하세요" 안내
   - [x] 답변 입력 필드
@@ -272,14 +279,14 @@
 - [x] `/pages/AdminPage.tsx` 생성
 - [x] 전체 통계 표시
   - [x] 총 단어 수, 전체 시도, 정답 수, 전체 정답률
-  - [x] 유형별 정답률 (Type 1, 2, 3)
+  - [x] 유형별 정답률 (Type 1, 2, 3, 4)
 - [x] 날짜별 단어 목록
   - [x] 날짜 선택 UI
   - [x] 해당 날짜에 추가된 단어 목록 표시
   - [x] 각 날짜별 단어 개수
 - [x] 단어별 통계
   - [x] 단어별 상세 정보 표시 (단어, 뜻)
-  - [x] 유형1 합격률, 유형2 합격률, 유형3 합격률, 전체 합격률
+  - [x] 유형1 합격률, 유형2 합격률, 유형3 합격률, 유형4 합격률, 전체 합격률
   - [x] 합격률 계산: `(correct / attempts) * 100`
 - [ ] 선택적: 차트 시각화 (향후 개선)
   - [ ] recharts 또는 chart.js 설치
@@ -319,7 +326,7 @@
   - [ ] 중복 단어
   - [ ] 네트워크 오류
 - [ ] 시험 기능 테스트
-  - [ ] 3가지 유형 모두 정상 작동
+  - [ ] 4가지 유형 모두 정상 작동
   - [ ] 답변 검증 정확성
   - [ ] 통계 업데이트 확인
 - [ ] 복습 기능 테스트

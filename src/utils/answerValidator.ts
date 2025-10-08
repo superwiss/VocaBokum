@@ -19,11 +19,11 @@ function extractKoreanStem(str: string): string {
 }
 
 /**
- * 유형 1과 2: 발음 듣고/영어 단어 보고 한글 뜻 입력
+ * 유형 1과 3: 발음 듣고/영어 단어 보고 한글 뜻 입력
  * meanings 배열 중 하나라도 일치하면 정답
  * 부분 일치 허용
  */
-export function validateType1And2(
+export function validateType1And3(
   userAnswer: string,
   correctMeanings: string[]
 ): boolean {
@@ -55,10 +55,10 @@ export function validateType1And2(
 }
 
 /**
- * 유형 3: 한글 뜻 보고 영어 단어 입력
+ * 유형 2와 4: 영어 단어 입력
  * 정확한 일치 검사 (대소문자 무시)
  */
-export function validateType3(
+export function validateType2And4(
   userAnswer: string,
   correctWord: string
 ): boolean {
@@ -74,14 +74,14 @@ export function validateType3(
  * 퀴즈 타입에 따른 답변 검증
  */
 export function validateAnswer(
-  type: 1 | 2 | 3,
+  type: 1 | 2 | 3 | 4,
   userAnswer: string,
   correctMeanings: string[],
   correctWord: string
 ): boolean {
-  if (type === 1 || type === 2) {
-    return validateType1And2(userAnswer, correctMeanings)
+  if (type === 1 || type === 3) {
+    return validateType1And3(userAnswer, correctMeanings)
   } else {
-    return validateType3(userAnswer, correctWord)
+    return validateType2And4(userAnswer, correctWord)
   }
 }

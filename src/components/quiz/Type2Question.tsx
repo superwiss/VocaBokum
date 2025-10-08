@@ -23,7 +23,7 @@ export default function Type2Question({ question, onSubmit }: Type2QuestionProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle>유형 2: 영어 단어를 보고 한글 뜻을 입력하세요</CardTitle>
+        <CardTitle>유형 3: 영어 단어를 보고 한글 뜻을 입력하세요</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">

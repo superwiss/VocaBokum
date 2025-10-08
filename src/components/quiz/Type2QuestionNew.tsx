@@ -4,14 +4,33 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { QuizQuestion } from '@/types/quiz'
+import { speechService } from '@/services/speechService'
+import { toast } from 'sonner'
 
-interface Type3QuestionProps {
+interface Type2QuestionNewProps {
   question: QuizQuestion
   onSubmit: (answer: string) => void
 }
 
-export default function Type3Question({ question, onSubmit }: Type3QuestionProps) {
+export default function Type2QuestionNew({ question, onSubmit }: Type2QuestionNewProps) {
   const [answer, setAnswer] = useState('')
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const handlePlayPronunciation = async () => {
+    try {
+      if (!speechService.isSupported()) {
+        toast.error('이 브라우저는 음성 재생을 지원하지 않습니다.')
+        return
+      }
+
+      setIsPlaying(true)
+      await speechService.speak(question.word.word)
+    } catch (error) {
+      toast.error('발음 재생에 실패했습니다.')
+    } finally {
+      setIsPlaying(false)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,17 +42,18 @@ export default function Type3Question({ question, onSubmit }: Type3QuestionProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle>유형 4: 한글 뜻을 보고 영어 단어를 입력하세요</CardTitle>
+        <CardTitle>유형 2: 발음을 듣고 영어 단어를 입력하세요</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="bg-muted p-6 rounded-lg">
-          <ul className="space-y-2">
-            {question.word.meanings.map((meaning, idx) => (
-              <li key={idx} className="text-lg">
-                {idx + 1}. {meaning}
-              </li>
-            ))}
-          </ul>
+        <div className="flex justify-center">
+          <Button
+            size="lg"
+            onClick={handlePlayPronunciation}
+            disabled={isPlaying}
+            className="text-4xl px-8 py-8"
+          >
+            {isPlaying ? '재생 중...' : '🔊 발음 듣기'}
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

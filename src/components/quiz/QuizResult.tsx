@@ -19,10 +19,12 @@ export default function QuizResult({ results, onRetry }: QuizResultProps) {
   const type1Results = results.filter((r) => r.type === 1)
   const type2Results = results.filter((r) => r.type === 2)
   const type3Results = results.filter((r) => r.type === 3)
+  const type4Results = results.filter((r) => r.type === 4)
 
   const type1Correct = type1Results.filter((r) => r.isCorrect).length
   const type2Correct = type2Results.filter((r) => r.isCorrect).length
   const type3Correct = type3Results.filter((r) => r.isCorrect).length
+  const type4Correct = type4Results.filter((r) => r.isCorrect).length
 
   const type1Score =
     type1Results.length > 0 ? Math.round((type1Correct / type1Results.length) * 100) : 0
@@ -30,6 +32,8 @@ export default function QuizResult({ results, onRetry }: QuizResultProps) {
     type2Results.length > 0 ? Math.round((type2Correct / type2Results.length) * 100) : 0
   const type3Score =
     type3Results.length > 0 ? Math.round((type3Correct / type3Results.length) * 100) : 0
+  const type4Score =
+    type4Results.length > 0 ? Math.round((type4Correct / type4Results.length) * 100) : 0
 
   // 틀린 문제들
   const wrongAnswers = results.filter((r) => !r.isCorrect)
@@ -48,26 +52,33 @@ export default function QuizResult({ results, onRetry }: QuizResultProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">유형 1 (듣고 한글 뜻 쓰기)</p>
+              <p className="text-sm text-muted-foreground">유형 1 (듣고 한글 뜻)</p>
               <p className="text-2xl font-semibold">{type1Score}%</p>
               <p className="text-xs text-muted-foreground">
                 {type1Correct}/{type1Results.length}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">유형 2 (단어→뜻)</p>
+              <p className="text-sm text-muted-foreground">유형 2 (듣고 영어 단어)</p>
               <p className="text-2xl font-semibold">{type2Score}%</p>
               <p className="text-xs text-muted-foreground">
                 {type2Correct}/{type2Results.length}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">유형 3 (뜻→단어)</p>
+              <p className="text-sm text-muted-foreground">유형 3 (단어→뜻)</p>
               <p className="text-2xl font-semibold">{type3Score}%</p>
               <p className="text-xs text-muted-foreground">
                 {type3Correct}/{type3Results.length}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">유형 4 (뜻→단어)</p>
+              <p className="text-2xl font-semibold">{type4Score}%</p>
+              <p className="text-xs text-muted-foreground">
+                {type4Correct}/{type4Results.length}
               </p>
             </div>
           </div>

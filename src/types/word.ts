@@ -5,6 +5,8 @@ export interface WordStats {
   type2Correct: number
   type3Attempts: number
   type3Correct: number
+  type4Attempts: number
+  type4Correct: number
 }
 
 export interface Word {
@@ -16,4 +18,4 @@ export interface Word {
   stats: WordStats
 }
 
-export type QuestionType = 1 | 2 | 3
+export type QuestionType = 1 | 2 | 3 | 4

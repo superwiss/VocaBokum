@@ -4,6 +4,7 @@ import { generateReviewQuiz } from '@/utils/quizGenerator'
 import { validateAnswer } from '@/utils/answerValidator'
 import { QuizQuestion, QuizResult as QuizResultType } from '@/types/quiz'
 import Type1Question from '@/components/quiz/Type1Question'
+import Type2QuestionNew from '@/components/quiz/Type2QuestionNew'
 import Type2Question from '@/components/quiz/Type2Question'
 import Type3Question from '@/components/quiz/Type3Question'
 import QuizResult from '@/components/quiz/QuizResult'
@@ -52,7 +53,7 @@ export default function ReviewPage() {
       isCorrect,
       userAnswer: answer,
       correctAnswer:
-        currentQuestion.type === 3
+        currentQuestion.type === 2 || currentQuestion.type === 4
           ? currentQuestion.word.word
           : currentQuestion.word.meanings,
     }
@@ -187,9 +188,12 @@ export default function ReviewPage() {
         <Type1Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
       )}
       {currentQuestion.type === 2 && (
-        <Type2Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
+        <Type2QuestionNew key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
       )}
       {currentQuestion.type === 3 && (
+        <Type2Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
+      )}
+      {currentQuestion.type === 4 && (
         <Type3Question key={currentQuestion.id} question={currentQuestion} onSubmit={handleAnswer} />
       )}
     </div>

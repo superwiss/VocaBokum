@@ -15,14 +15,14 @@ function shuffleArray<T>(array: T[]): T[] {
 
 /**
  * 단어 배열로부터 퀴즈 문제 생성
- * 각 단어당 3가지 유형(1, 2, 3)의 문제를 생성하고 랜덤 섞기
+ * 각 단어당 4가지 유형(1, 2, 3, 4)의 문제를 생성하고 랜덤 섞기
  */
 export function generateQuiz(words: Word[]): QuizQuestion[] {
   const questions: QuizQuestion[] = []
 
-  // 각 단어에 대해 3가지 유형의 문제 생성
+  // 각 단어에 대해 4가지 유형의 문제 생성
   words.forEach((word) => {
-    const types: QuestionType[] = [1, 2, 3]
+    const types: QuestionType[] = [1, 2, 3, 4]
 
     types.forEach((type) => {
       questions.push({
@@ -39,7 +39,7 @@ export function generateQuiz(words: Word[]): QuizQuestion[] {
 }
 
 /**
- * 오늘 단어로 퀴즈 생성 (각 단어당 3문제)
+ * 오늘 단어로 퀴즈 생성 (각 단어당 4문제)
  */
 export function generateTodayQuiz(words: Word[]): QuizQuestion[] {
   const today = new Date().toISOString().split('T')[0]
@@ -56,9 +56,9 @@ export function generateReviewQuiz(words: Word[], count: number): QuizQuestion[]
   // 오답률 기반 가중치 계산
   const wordsWithWeight = words.map((word) => {
     const totalAttempts =
-      word.stats.type1Attempts + word.stats.type2Attempts + word.stats.type3Attempts
+      word.stats.type1Attempts + word.stats.type2Attempts + word.stats.type3Attempts + word.stats.type4Attempts
     const totalCorrect =
-      word.stats.type1Correct + word.stats.type2Correct + word.stats.type3Correct
+      word.stats.type1Correct + word.stats.type2Correct + word.stats.type3Correct + word.stats.type4Correct
 
     // 시도가 없으면 기본 가중치 1
     const weight = totalAttempts === 0 ? 1 : (totalAttempts - totalCorrect) / totalAttempts
@@ -93,7 +93,8 @@ export function generateReviewQuiz(words: Word[], count: number): QuizQuestion[]
 
   // 각 선택된 단어에 대해 1개의 랜덤 유형 생성
   const questions: QuizQuestion[] = selectedWords.map((word) => {
-    const randomType = (Math.floor(Math.random() * 3) + 1) as QuestionType
+    const types: QuestionType[] = [1, 2, 3, 4]
+    const randomType = types[Math.floor(Math.random() * types.length)]
 
     return {
       id: `${word.id}-type${randomType}-${Date.now()}-${Math.random()}`,

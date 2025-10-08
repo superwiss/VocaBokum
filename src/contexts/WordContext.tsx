@@ -8,7 +8,7 @@ type WordAction =
   | { type: 'ADD_WORD'; payload: Word }
   | { type: 'UPDATE_WORD'; payload: Word }
   | { type: 'DELETE_WORD'; payload: string }
-  | { type: 'UPDATE_STATS'; payload: { wordId: string; type: 1 | 2 | 3; isCorrect: boolean } }
+  | { type: 'UPDATE_STATS'; payload: { wordId: string; type: 1 | 2 | 3 | 4; isCorrect: boolean } }
 
 // State type
 interface WordState {

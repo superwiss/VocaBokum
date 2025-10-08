@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useWords } from '@/hooks/useWords'
 import { generateReviewQuiz } from '@/utils/quizGenerator'
 import { validateAnswer } from '@/utils/answerValidator'
 import { QuizQuestion, QuizResult as QuizResultType } from '@/types/quiz'
+import { QuestionType } from '@/types/word'
 import Type1Question from '@/components/quiz/Type1Question'
 import Type2QuestionNew from '@/components/quiz/Type2QuestionNew'
 import Type2Question from '@/components/quiz/Type2Question'
 import Type3Question from '@/components/quiz/Type3Question'
 import QuizResult from '@/components/quiz/QuizResult'
+import QuizTypeSelector from '@/components/quiz/QuizTypeSelector'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +17,7 @@ import { Label } from '@/components/ui/label'
 
 export default function ReviewPage() {
   const { getPastWords, updateStats } = useWords()
+  const [selectedTypes, setSelectedTypes] = useState<QuestionType[]>([1, 2, 3, 4])
   const [reviewCount, setReviewCount] = useState(10)
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -28,7 +31,7 @@ export default function ReviewPage() {
     if (pastWords.length === 0) return
 
     const count = Math.min(reviewCount, pastWords.length)
-    const quiz = generateReviewQuiz(pastWords, count)
+    const quiz = generateReviewQuiz(pastWords, count, selectedTypes)
     setQuestions(quiz)
     setCurrentIndex(0)
     setResults([])
@@ -102,44 +105,52 @@ export default function ReviewPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>복습 설정</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  복습 가능한 단어: {pastWords.length}개
-                </p>
-                <p className="text-sm text-muted-foreground mb-2">
-                  틀린 단어일수록 더 자주 출제됩니다.
-                </p>
-              </div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>복습 설정</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    복습 가능한 단어: {pastWords.length}개
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    틀린 단어일수록 더 자주 출제됩니다.
+                  </p>
+                </div>
 
-              <div>
-                <Label htmlFor="count">복습할 문제 수</Label>
-                <Input
-                  id="count"
-                  type="number"
-                  min={1}
-                  max={pastWords.length}
-                  value={reviewCount}
-                  onChange={(e) => setReviewCount(Number(e.target.value))}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  1 ~ {pastWords.length} 사이의 숫자를 입력하세요
-                </p>
-              </div>
+                <div>
+                  <Label htmlFor="count">복습할 문제 수</Label>
+                  <Input
+                    id="count"
+                    type="number"
+                    min={1}
+                    max={pastWords.length}
+                    value={reviewCount}
+                    onChange={(e) => setReviewCount(Number(e.target.value))}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    1 ~ {pastWords.length} 사이의 숫자를 입력하세요
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Button
-                onClick={startReview}
-                className="w-full"
-                disabled={reviewCount < 1 || reviewCount > pastWords.length}
-              >
-                복습 시작
-              </Button>
-            </CardContent>
-          </Card>
+            <QuizTypeSelector
+              selectedTypes={selectedTypes}
+              onTypesChange={setSelectedTypes}
+            />
+
+            <Button
+              onClick={startReview}
+              className="w-full"
+              size="lg"
+              disabled={reviewCount < 1 || reviewCount > pastWords.length}
+            >
+              복습 시작
+            </Button>
+          </div>
         )}
       </div>
     )

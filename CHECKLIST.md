@@ -228,6 +228,25 @@
   - [x] 각 단어의 stats 업데이트 (attempts++, correct++ if correct)
   - [x] 로컬 스토리지에 저장
 
+### 4.6 시험 유형 선택 기능
+- [x] `/components/quiz/QuizTypeSelector.tsx` 생성
+  - [x] 4가지 유형 선택 체크박스 UI
+  - [x] "모두 선택" / "모두 해제" 버튼
+  - [x] 선택된 유형 상태 관리
+  - [x] 최소 1개 유형 선택 검증
+- [x] `/utils/quizGenerator.ts` 업데이트
+  - [x] `generateQuiz`에 `selectedTypes` 파라미터 추가
+  - [x] 선택된 유형만 필터링하여 문제 생성
+  - [x] `generateReviewQuiz`에도 동일 로직 적용
+- [x] `/pages/QuizPage.tsx` 업데이트
+  - [x] QuizTypeSelector 컴포넌트 통합
+  - [x] 선택된 유형 상태 관리
+  - [x] 시험 생성 시 선택된 유형 전달
+- [x] `/pages/ReviewPage.tsx` 업데이트
+  - [x] QuizTypeSelector 컴포넌트 통합
+  - [x] 선택된 유형 상태 관리
+  - [x] 복습 시험 생성 시 선택된 유형 전달
+
 ---
 
 ## Phase 5: 복습 시스템

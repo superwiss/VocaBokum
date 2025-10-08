@@ -3,6 +3,7 @@
  */
 class SpeechService {
   private synthesis: SpeechSynthesis | null = null
+  // @ts-ignore - currentUtterance는 speak, stop 메서드에서 상태 관리를 위해 사용됨
   private currentUtterance: SpeechSynthesisUtterance | null = null
 
   constructor() {

@@ -1,5 +1,5 @@
 import { useWordContext } from '@/contexts/WordContext'
-import { Word } from '@/types/word'
+import { Word, QuestionType } from '@/types/word'
 
 export function useWords() {
   const { words, dispatch } = useWordContext()
@@ -34,7 +34,7 @@ export function useWords() {
     return words.filter((w) => !w.addedDate.startsWith(today))
   }
 
-  const updateStats = (wordId: string, type: 1 | 2 | 3, isCorrect: boolean) => {
+  const updateStats = (wordId: string, type: QuestionType, isCorrect: boolean) => {
     dispatch({ type: 'UPDATE_STATS', payload: { wordId, type, isCorrect } })
   }
 

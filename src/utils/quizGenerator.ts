@@ -15,16 +15,16 @@ function shuffleArray<T>(array: T[]): T[] {
 
 /**
  * 단어 배열로부터 퀴즈 문제 생성
- * 각 단어당 4가지 유형(1, 2, 3, 4)의 문제를 생성하고 랜덤 섞기
+ * 각 단어당 선택된 유형의 문제를 생성하고 랜덤 섞기
+ * @param words 퀴즈를 생성할 단어 목록
+ * @param selectedTypes 선택된 문제 유형 (기본값: 모든 유형)
  */
-export function generateQuiz(words: Word[]): QuizQuestion[] {
+export function generateQuiz(words: Word[], selectedTypes: QuestionType[] = [1, 2, 3, 4]): QuizQuestion[] {
   const questions: QuizQuestion[] = []
 
-  // 각 단어에 대해 4가지 유형의 문제 생성
+  // 각 단어에 대해 선택된 유형의 문제 생성
   words.forEach((word) => {
-    const types: QuestionType[] = [1, 2, 3, 4]
-
-    types.forEach((type) => {
+    selectedTypes.forEach((type) => {
       questions.push({
         id: `${word.id}-type${type}-${Date.now()}-${Math.random()}`,
         wordId: word.id,
@@ -39,18 +39,23 @@ export function generateQuiz(words: Word[]): QuizQuestion[] {
 }
 
 /**
- * 오늘 단어로 퀴즈 생성 (각 단어당 4문제)
+ * 오늘 단어로 퀴즈 생성
+ * @param words 전체 단어 목록
+ * @param selectedTypes 선택된 문제 유형 (기본값: 모든 유형)
  */
-export function generateTodayQuiz(words: Word[]): QuizQuestion[] {
+export function generateTodayQuiz(words: Word[], selectedTypes: QuestionType[] = [1, 2, 3, 4]): QuizQuestion[] {
   const today = new Date().toISOString().split('T')[0]
   const todayWords = words.filter((w) => w.addedDate.startsWith(today))
-  return generateQuiz(todayWords)
+  return generateQuiz(todayWords, selectedTypes)
 }
 
 /**
  * 복습용 퀴즈 생성 (각 단어당 1개 유형만 랜덤 선택)
+ * @param words 복습할 단어 목록
+ * @param count 복습 문제 수
+ * @param selectedTypes 선택된 문제 유형 (기본값: 모든 유형)
  */
-export function generateReviewQuiz(words: Word[], count: number): QuizQuestion[] {
+export function generateReviewQuiz(words: Word[], count: number, selectedTypes: QuestionType[] = [1, 2, 3, 4]): QuizQuestion[] {
   if (words.length === 0) return []
 
   // 오답률 기반 가중치 계산
@@ -91,10 +96,9 @@ export function generateReviewQuiz(words: Word[], count: number): QuizQuestion[]
     availableWords.splice(selectedIndex, 1)
   }
 
-  // 각 선택된 단어에 대해 1개의 랜덤 유형 생성
+  // 각 선택된 단어에 대해 선택된 유형 중 1개의 랜덤 유형 생성
   const questions: QuizQuestion[] = selectedWords.map((word) => {
-    const types: QuestionType[] = [1, 2, 3, 4]
-    const randomType = types[Math.floor(Math.random() * types.length)]
+    const randomType = selectedTypes[Math.floor(Math.random() * selectedTypes.length)]
 
     return {
       id: `${word.id}-type${randomType}-${Date.now()}-${Math.random()}`,

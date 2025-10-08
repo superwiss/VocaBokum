@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, ReactNode, useEffect, useState } from 'react'
-import { Word } from '@/types/word'
+import { Word, QuestionType } from '@/types/word'
 import { storageService } from '@/services/storageService'
 
 // Action types
@@ -8,7 +8,7 @@ type WordAction =
   | { type: 'ADD_WORD'; payload: Word }
   | { type: 'UPDATE_WORD'; payload: Word }
   | { type: 'DELETE_WORD'; payload: string }
-  | { type: 'UPDATE_STATS'; payload: { wordId: string; type: 1 | 2 | 3 | 4; isCorrect: boolean } }
+  | { type: 'UPDATE_STATS'; payload: { wordId: string; type: QuestionType; isCorrect: boolean } }
 
 // State type
 interface WordState {

@@ -75,6 +75,8 @@ export default function WordInputForm() {
           type2Correct: 0,
           type3Attempts: 0,
           type3Correct: 0,
+          type4Attempts: 0,
+          type4Correct: 0,
         },
       }
 

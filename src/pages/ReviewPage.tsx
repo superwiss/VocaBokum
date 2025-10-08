@@ -41,6 +41,13 @@ export default function ReviewPage() {
 
   const dateRangeWords = getWordsByDateRange(startDate, endDate)
 
+  // 날짜 범위가 변경되면 문제 수를 단어 개수 이하로 조정
+  useEffect(() => {
+    if (questionLimit > dateRangeWords.length) {
+      setQuestionLimit(Math.max(1, dateRangeWords.length))
+    }
+  }, [startDate, endDate, dateRangeWords.length])
+
   const startQuiz = () => {
     if (dateRangeWords.length === 0) return
 
@@ -204,10 +211,14 @@ export default function ReviewPage() {
                       min={1}
                       max={dateRangeWords.length}
                       value={questionLimit}
-                      onChange={(e) => setQuestionLimit(Number(e.target.value))}
+                      onChange={(e) => {
+                        const value = Number(e.target.value)
+                        // 단어 개수를 초과하지 않도록 제한
+                        setQuestionLimit(Math.min(value, dateRangeWords.length))
+                      }}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      틀린 단어일수록 더 자주 출제됩니다
+                      최대 {dateRangeWords.length}개 (틀린 단어 우선 출제)
                     </p>
                   </div>
                 )}

@@ -132,4 +132,78 @@ export const storageService = {
   clearAll(): void {
     localStorage.removeItem(STORAGE_KEY)
   },
+
+  /**
+   * 모든 단어의 통계 데이터 리셋
+   */
+  resetAllStats(): void {
+    const words = this.loadWords()
+    const resetWords = words.map((word) => ({
+      ...word,
+      stats: {
+        type1Attempts: 0,
+        type1Correct: 0,
+        type2Attempts: 0,
+        type2Correct: 0,
+        type3Attempts: 0,
+        type3Correct: 0,
+        type4Attempts: 0,
+        type4Correct: 0,
+      },
+    }))
+    this.saveWords(resetWords)
+  },
+
+  /**
+   * 특정 날짜의 단어들 통계 데이터 리셋
+   */
+  resetStatsByDate(date: string): void {
+    const words = this.loadWords()
+    const resetWords = words.map((word) => {
+      if (word.addedDate.startsWith(date)) {
+        return {
+          ...word,
+          stats: {
+            type1Attempts: 0,
+            type1Correct: 0,
+            type2Attempts: 0,
+            type2Correct: 0,
+            type3Attempts: 0,
+            type3Correct: 0,
+            type4Attempts: 0,
+            type4Correct: 0,
+          },
+        }
+      }
+      return word
+    })
+    this.saveWords(resetWords)
+  },
+
+  /**
+   * 특정 단어의 통계 데이터 리셋
+   */
+  resetWordStats(wordId: string): void {
+    const words = this.loadWords()
+    const index = words.findIndex((w) => w.id === wordId)
+
+    if (index !== -1) {
+      words[index] = {
+        ...words[index],
+        stats: {
+          type1Attempts: 0,
+          type1Correct: 0,
+          type2Attempts: 0,
+          type2Correct: 0,
+          type3Attempts: 0,
+          type3Correct: 0,
+          type4Attempts: 0,
+          type4Correct: 0,
+        },
+      }
+      this.saveWords(words)
+    } else {
+      throw new Error('단어를 찾을 수 없습니다.')
+    }
+  },
 }

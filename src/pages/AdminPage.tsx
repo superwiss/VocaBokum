@@ -1,11 +1,32 @@
 import { useState, useMemo } from 'react'
 import { useWords } from '@/hooks/useWords'
+import { useWordContext } from '@/contexts/WordContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export default function AdminPage() {
   const { words } = useWords()
+  const { dispatch } = useWordContext()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+
+  // 리셋 다이얼로그 상태
+  const [resetDialog, setResetDialog] = useState<{
+    open: boolean
+    type: 'all' | 'date' | 'word'
+    date?: string
+    wordId?: string
+    wordName?: string
+  }>({ open: false, type: 'all' })
 
   // 날짜별로 단어 그룹화
   const wordsByDate = useMemo(() => {
@@ -101,6 +122,31 @@ export default function AdminPage() {
   // 선택된 날짜의 단어들
   const selectedWords = selectedDate ? wordsByDate.get(selectedDate) || [] : []
 
+  // 리셋 핸들러
+  const handleResetConfirm = () => {
+    if (resetDialog.type === 'all') {
+      dispatch({ type: 'RESET_ALL_STATS' })
+    } else if (resetDialog.type === 'date' && resetDialog.date) {
+      dispatch({ type: 'RESET_DATE_STATS', payload: resetDialog.date })
+    } else if (resetDialog.type === 'word' && resetDialog.wordId) {
+      dispatch({ type: 'RESET_WORD_STATS', payload: resetDialog.wordId })
+    }
+    setResetDialog({ open: false, type: 'all' })
+  }
+
+  // 리셋 다이얼로그 열기 함수들
+  const openResetAllDialog = () => {
+    setResetDialog({ open: true, type: 'all' })
+  }
+
+  const openResetDateDialog = (date: string) => {
+    setResetDialog({ open: true, type: 'date', date })
+  }
+
+  const openResetWordDialog = (wordId: string, wordName: string) => {
+    setResetDialog({ open: true, type: 'word', wordId, wordName })
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-6">
@@ -111,8 +157,15 @@ export default function AdminPage() {
       {/* 전체 통계 */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>전체 통계</CardTitle>
-          <CardDescription>모든 단어에 대한 종합 통계입니다.</CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>전체 통계</CardTitle>
+              <CardDescription>모든 단어에 대한 종합 통계입니다.</CardDescription>
+            </div>
+            <Button variant="destructive" size="sm" onClick={openResetAllDialog}>
+              전체 리셋
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -200,15 +253,35 @@ export default function AdminPage() {
               <div className="border rounded p-4 max-h-96 overflow-y-auto">
                 {selectedDate ? (
                   <>
-                    <h3 className="font-semibold mb-3">{selectedDate} 단어 통계</h3>
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-semibold">{selectedDate} 단어 통계</h3>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => openResetDateDialog(selectedDate)}
+                      >
+                        날짜 리셋
+                      </Button>
+                    </div>
                     <div className="space-y-3">
                       {selectedWords.map((word) => {
                         const stats = getWordStats(word)
                         return (
                           <div key={word.id} className="border-b pb-3 last:border-0">
-                            <div className="font-medium mb-1">{word.word}</div>
-                            <div className="text-sm text-muted-foreground mb-2">
-                              {word.meanings.join(', ')}
+                            <div className="flex justify-between items-start mb-1">
+                              <div>
+                                <div className="font-medium">{word.word}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {word.meanings.join(', ')}
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openResetWordDialog(word.id, word.word)}
+                              >
+                                리셋
+                              </Button>
                             </div>
                             <div className="grid grid-cols-5 gap-2 text-xs">
                               <div className="text-center">
@@ -262,6 +335,47 @@ export default function AdminPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 리셋 확인 다이얼로그 */}
+      <AlertDialog open={resetDialog.open} onOpenChange={(open: boolean) => setResetDialog({ ...resetDialog, open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>통계 리셋 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              {resetDialog.type === 'all' && (
+                <>
+                  <strong>모든 단어</strong>의 통계 데이터를 초기화합니다.
+                  <br />
+                  단어는 삭제되지 않으며, 통계 데이터만 0으로 리셋됩니다.
+                </>
+              )}
+              {resetDialog.type === 'date' && (
+                <>
+                  <strong>{resetDialog.date}</strong>에 등록된 모든 단어의 통계 데이터를 초기화합니다.
+                  <br />
+                  단어는 삭제되지 않으며, 통계 데이터만 0으로 리셋됩니다.
+                </>
+              )}
+              {resetDialog.type === 'word' && (
+                <>
+                  <strong>{resetDialog.wordName}</strong> 단어의 통계 데이터를 초기화합니다.
+                  <br />
+                  단어는 삭제되지 않으며, 통계 데이터만 0으로 리셋됩니다.
+                </>
+              )}
+              <br />
+              <br />
+              이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              리셋
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

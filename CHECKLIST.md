@@ -307,6 +307,24 @@
   - [x] 단어별 상세 정보 표시 (단어, 뜻)
   - [x] 유형1 합격률, 유형2 합격률, 유형3 합격률, 유형4 합격률, 전체 합격률
   - [x] 합격률 계산: `(correct / attempts) * 100`
+- [x] 통계 리셋 기능
+  - [x] 전체 리셋 기능
+    - [x] 모든 단어의 통계 데이터 초기화 (attempts, correct → 0)
+    - [x] 확인 다이얼로그로 안전장치 구현
+  - [x] 날짜별 리셋 기능
+    - [x] 선택한 날짜의 모든 단어 통계 초기화
+    - [x] 확인 다이얼로그로 안전장치 구현
+  - [x] 단어별 리셋 기능
+    - [x] 개별 단어의 통계 데이터만 초기화
+    - [x] 확인 다이얼로그로 안전장치 구현
+  - [x] storageService에 리셋 함수 추가
+    - [x] `resetAllStats(): void`
+    - [x] `resetStatsByDate(date: string): void`
+    - [x] `resetWordStats(wordId: string): void`
+  - [x] WordContext에 리셋 액션 추가
+    - [x] RESET_ALL_STATS
+    - [x] RESET_DATE_STATS
+    - [x] RESET_WORD_STATS
 - [ ] 선택적: 차트 시각화 (향후 개선)
   - [ ] recharts 또는 chart.js 설치
   - [ ] 전체 합격률 추이 그래프

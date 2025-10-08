@@ -9,6 +9,9 @@ type WordAction =
   | { type: 'UPDATE_WORD'; payload: Word }
   | { type: 'DELETE_WORD'; payload: string }
   | { type: 'UPDATE_STATS'; payload: { wordId: string; type: QuestionType; isCorrect: boolean } }
+  | { type: 'RESET_ALL_STATS' }
+  | { type: 'RESET_DATE_STATS'; payload: string }
+  | { type: 'RESET_WORD_STATS'; payload: string }
 
 // State type
 interface WordState {
@@ -61,6 +64,67 @@ function wordReducer(state: WordState, action: WordAction): WordState {
         }),
       }
     }
+
+    case 'RESET_ALL_STATS':
+      return {
+        words: state.words.map((word) => ({
+          ...word,
+          stats: {
+            type1Attempts: 0,
+            type1Correct: 0,
+            type2Attempts: 0,
+            type2Correct: 0,
+            type3Attempts: 0,
+            type3Correct: 0,
+            type4Attempts: 0,
+            type4Correct: 0,
+          },
+        })),
+      }
+
+    case 'RESET_DATE_STATS':
+      return {
+        words: state.words.map((word) => {
+          if (word.addedDate.startsWith(action.payload)) {
+            return {
+              ...word,
+              stats: {
+                type1Attempts: 0,
+                type1Correct: 0,
+                type2Attempts: 0,
+                type2Correct: 0,
+                type3Attempts: 0,
+                type3Correct: 0,
+                type4Attempts: 0,
+                type4Correct: 0,
+              },
+            }
+          }
+          return word
+        }),
+      }
+
+    case 'RESET_WORD_STATS':
+      return {
+        words: state.words.map((word) => {
+          if (word.id === action.payload) {
+            return {
+              ...word,
+              stats: {
+                type1Attempts: 0,
+                type1Correct: 0,
+                type2Attempts: 0,
+                type2Correct: 0,
+                type3Attempts: 0,
+                type3Correct: 0,
+                type4Attempts: 0,
+                type4Correct: 0,
+              },
+            }
+          }
+          return word
+        }),
+      }
 
     default:
       return state

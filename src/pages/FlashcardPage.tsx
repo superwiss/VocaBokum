@@ -1,17 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWords } from '@/hooks/useWords';
-import { QuestionType } from '@/types/word';
+import { FlashcardType, FlashcardItem } from '@/types/flashcard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DateRangeSelector from '@/components/quiz/DateRangeSelector';
-import QuizTypeSelector from '@/components/quiz/QuizTypeSelector';
+import { FlashcardTypeSelector } from '@/components/flashcard/FlashcardTypeSelector';
 import { FlashcardDisplay } from '@/components/flashcard/FlashcardDisplay';
 import { FlashcardComplete } from '@/components/flashcard/FlashcardComplete';
-import {
-  generateFlashcardPool,
-  FlashcardItem,
-} from '@/utils/flashcardGenerator';
+import { generateFlashcardPool } from '@/utils/flashcardGenerator';
 
 type Step = 'setup' | 'learning' | 'complete';
 
@@ -22,7 +19,7 @@ export default function FlashcardPage() {
   // 설정 상태
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<QuestionType[]>([1, 2, 3, 4]);
+  const [selectedTypes, setSelectedTypes] = useState<FlashcardType[]>([1]);
 
   // 학습 상태
   const [step, setStep] = useState<Step>('setup');
@@ -36,7 +33,6 @@ export default function FlashcardPage() {
     type1: 0,
     type2: 0,
     type3: 0,
-    type4: 0,
   });
 
   // 초기 날짜 설정
@@ -68,7 +64,7 @@ export default function FlashcardPage() {
     setCurrentCard(pool[0]);
     setLearnedCount(0);
     setStartTime(Date.now());
-    setTypeBreakdown({ type1: 0, type2: 0, type3: 0, type4: 0 });
+    setTypeBreakdown({ type1: 0, type2: 0, type3: 0 });
     setStep('learning');
   };
 
@@ -81,7 +77,6 @@ export default function FlashcardPage() {
     if (currentCard.type === 1) newBreakdown.type1++;
     else if (currentCard.type === 2) newBreakdown.type2++;
     else if (currentCard.type === 3) newBreakdown.type3++;
-    else if (currentCard.type === 4) newBreakdown.type4++;
     setTypeBreakdown(newBreakdown);
 
     setLearnedCount((prev) => prev + 1);
@@ -119,7 +114,7 @@ export default function FlashcardPage() {
     setRemainingCards([]);
     setCurrentCard(null);
     setLearnedCount(0);
-    setTypeBreakdown({ type1: 0, type2: 0, type3: 0, type4: 0 });
+    setTypeBreakdown({ type1: 0, type2: 0, type3: 0 });
   };
 
   // 홈으로
@@ -152,7 +147,7 @@ export default function FlashcardPage() {
             />
 
             {/* 유형 선택 */}
-            <QuizTypeSelector
+            <FlashcardTypeSelector
               selectedTypes={selectedTypes}
               onTypesChange={setSelectedTypes}
             />

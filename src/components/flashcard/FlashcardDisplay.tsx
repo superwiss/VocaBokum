@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { FlashcardItem } from '@/utils/flashcardGenerator';
+import { FlashcardItem } from '@/types/flashcard';
 import { speechService } from '@/services/speechService';
 
 interface FlashcardDisplayProps {
@@ -30,8 +30,8 @@ export function FlashcardDisplay({
     setShowAnswer(false);
     setSelectedAnswer(null);
 
-    // 유형 1, 2는 자동으로 발음 재생
-    if (card.type === 1 || card.type === 2) {
+    // 유형 1은 자동으로 발음 재생
+    if (card.type === 1) {
       playPronunciation();
     }
   }, [card.id]);
@@ -95,7 +95,7 @@ export function FlashcardDisplay({
           <div className="space-y-6">
             <div className="text-center">
               <p className="text-lg text-muted-foreground mb-4">
-                발음을 듣고 한글 뜻을 떠올려보세요
+                발음을 듣고 영어 단어와 한글 뜻을 떠올려보세요
               </p>
               <Button
                 size="lg"
@@ -111,25 +111,6 @@ export function FlashcardDisplay({
 
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <p className="text-lg text-muted-foreground mb-4">
-                발음을 듣고 영어 단어를 떠올려보세요
-              </p>
-              <Button
-                size="lg"
-                onClick={playPronunciation}
-                disabled={isPlaying}
-                className="text-4xl px-8 py-8"
-              >
-                {isPlaying ? '재생 중...' : '🔊 발음 듣기'}
-              </Button>
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
           <div className="text-center space-y-4">
             <p className="text-lg text-muted-foreground">
               이 단어의 한글 뜻을 떠올려보세요
@@ -139,7 +120,7 @@ export function FlashcardDisplay({
           </div>
         );
 
-      case 4:
+      case 3:
         return (
           <div className="text-center space-y-4">
             <p className="text-lg text-muted-foreground">
@@ -159,7 +140,13 @@ export function FlashcardDisplay({
         return (
           <div className="mt-8 rounded-lg bg-green-50 dark:bg-green-950 p-6 border-2 border-green-500">
             <p className="text-sm text-muted-foreground mb-2">정답:</p>
-            <p className="text-3xl font-bold text-green-700 dark:text-green-400">
+            <p className="text-4xl font-bold text-green-700 dark:text-green-400">
+              {card.word.word}
+            </p>
+            <p className="text-lg text-muted-foreground mt-2">
+              {card.word.pronunciation}
+            </p>
+            <p className="text-3xl font-bold text-green-700 dark:text-green-400 mt-4">
               {card.word.meanings.join(', ')}
             </p>
           </div>
@@ -169,26 +156,13 @@ export function FlashcardDisplay({
         return (
           <div className="mt-8 rounded-lg bg-green-50 dark:bg-green-950 p-6 border-2 border-green-500">
             <p className="text-sm text-muted-foreground mb-2">정답:</p>
-            <p className="text-4xl font-bold text-green-700 dark:text-green-400">
-              {card.word.word}
-            </p>
-            <p className="text-lg text-muted-foreground mt-2">
-              {card.word.pronunciation}
-            </p>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="mt-8 rounded-lg bg-green-50 dark:bg-green-950 p-6 border-2 border-green-500">
-            <p className="text-sm text-muted-foreground mb-2">정답:</p>
             <p className="text-3xl font-bold text-green-700 dark:text-green-400">
               {card.word.meanings.join(', ')}
             </p>
           </div>
         );
 
-      case 4:
+      case 3:
         return (
           <div className="mt-8 rounded-lg bg-green-50 dark:bg-green-950 p-6 border-2 border-green-500">
             <p className="text-sm text-muted-foreground mb-2">정답:</p>

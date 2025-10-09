@@ -8,7 +8,6 @@ interface FlashcardStats {
     type1: number;
     type2: number;
     type3: number;
-    type4: number;
   };
 }
 
@@ -60,26 +59,20 @@ export function FlashcardComplete({ stats, onGoHome, onRestart }: FlashcardCompl
             <div className="grid grid-cols-2 gap-3">
               {stats.typeBreakdown.type1 > 0 && (
                 <div className="rounded bg-background p-3">
-                  <div className="text-sm text-muted-foreground">유형 1 (발음 → 뜻)</div>
+                  <div className="text-sm text-muted-foreground">유형 1 (발음 → 단어+뜻)</div>
                   <div className="text-xl font-bold">{stats.typeBreakdown.type1}개</div>
                 </div>
               )}
               {stats.typeBreakdown.type2 > 0 && (
                 <div className="rounded bg-background p-3">
-                  <div className="text-sm text-muted-foreground">유형 2 (발음 → 단어)</div>
+                  <div className="text-sm text-muted-foreground">유형 2 (단어 → 뜻)</div>
                   <div className="text-xl font-bold">{stats.typeBreakdown.type2}개</div>
                 </div>
               )}
               {stats.typeBreakdown.type3 > 0 && (
                 <div className="rounded bg-background p-3">
-                  <div className="text-sm text-muted-foreground">유형 3 (단어 → 뜻)</div>
+                  <div className="text-sm text-muted-foreground">유형 3 (뜻 → 단어)</div>
                   <div className="text-xl font-bold">{stats.typeBreakdown.type3}개</div>
-                </div>
-              )}
-              {stats.typeBreakdown.type4 > 0 && (
-                <div className="rounded bg-background p-3">
-                  <div className="text-sm text-muted-foreground">유형 4 (뜻 → 단어)</div>
-                  <div className="text-xl font-bold">{stats.typeBreakdown.type4}개</div>
                 </div>
               )}
             </div>

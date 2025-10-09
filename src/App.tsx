@@ -4,6 +4,7 @@ import { Toaster } from './components/ui/sonner'
 import Navigation from './components/common/Navigation'
 import HomePage from './pages/HomePage'
 import WordsPage from './pages/WordsPage'
+import FlashcardPage from './pages/FlashcardPage'
 import ReviewPage from './pages/ReviewPage'
 import ImportExportPage from './pages/ImportExportPage'
 import AdminPage from './pages/AdminPage'
@@ -17,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/words" element={<WordsPage />} />
+            <Route path="/flashcard" element={<FlashcardPage />} />
             <Route path="/quiz" element={<ReviewPage />} />
             <Route path="/review" element={<Navigate to="/quiz" replace />} />
             <Route path="/import-export" element={<ImportExportPage />} />

@@ -301,6 +301,70 @@
 
 ---
 
+## Phase 4.9: 플래시 카드 학습 시스템
+
+### 4.9.1 플래시 카드 페이지
+- [x] `/pages/FlashcardPage.tsx` 생성
+  - [x] 초기 설정 UI (날짜 범위, 유형 선택)
+  - [x] DateRangeSelector 컴포넌트 재사용
+  - [x] QuizTypeSelector 컴포넌트 재사용
+  - [x] 채점 방식은 항상 즉시 채점 모드 (UI 제거)
+  - [x] 문제 수 선택 UI 제거 (모든 단어 학습)
+  - [x] "학습 시작" 버튼
+
+### 4.9.2 플래시 카드 학습 로직
+- [x] `/utils/flashcardGenerator.ts` 생성
+  - [x] `generateFlashcardPool(words: Word[], selectedTypes: QuestionType[]): FlashcardItem[]`
+  - [x] 선택한 날짜 범위와 유형에 해당하는 모든 단어-유형 조합 생성
+  - [x] Fisher-Yates 알고리즘으로 랜덤 셔플
+- [x] 플래시 카드 학습 상태 관리
+  - [x] 현재 문제 추적 (currentCard, cardKey로 리셋 관리)
+  - [x] 외운 문제 목록 (learnedCount)
+  - [x] 남은 문제 풀 관리 (remainingCards)
+  - [x] O 선택 시 해당 문제 풀에서 제거
+  - [x] X 선택 시 문제 풀에 유지하고 다시 출제
+
+### 4.9.3 플래시 카드 UI 컴포넌트
+- [x] `/components/flashcard/FlashcardDisplay.tsx` 생성
+  - [x] 문제만 표시하는 상태 (정답 숨김)
+  - [x] 유형별 문제 표시:
+    - [x] 유형 1: 발음 버튼만 (자동 재생)
+    - [x] 유형 2: 발음 버튼만 (자동 재생)
+    - [x] 유형 3: 영어 단어만
+    - [x] 유형 4: 한글 뜻만
+  - [x] O / X 선택 버튼 UI
+  - [x] O/X 선택 후 정답 표시
+  - [x] "다음 카드" 버튼 (외움 처리/다시 학습 표시)
+  - [x] 진행률 표시 (외운 카드 수 / 남은 카드 수 / 전체)
+  - [x] 현재까지 외운 문제 수 표시
+- [x] 플래시 카드 학습 흐름 구현
+  - [x] 초기: 문제만 표시 + O/X 버튼
+  - [x] O/X 선택 시: 정답 표시 + "다음 카드" 버튼
+  - [x] "다음 카드" 클릭: 문제 풀 업데이트 + 다음 문제로 이동
+  - [x] 키보드 단축키 지원 (O키, X키, Enter키)
+  - [x] 마지막 카드 X 선택 시 리셋 버그 수정 (cardKey 사용)
+
+### 4.9.4 플래시 카드 완료 화면
+- [x] `/components/flashcard/FlashcardComplete.tsx` 생성
+  - [x] 축하 메시지 표시
+  - [x] 학습 통계 표시
+    - [x] 총 학습한 문제 수
+    - [x] 학습 시간
+    - [x] 유형별 학습 단어 수
+  - [x] "홈으로" 버튼
+  - [x] "다시 학습하기" 버튼
+
+### 4.9.5 라우팅 및 네비게이션
+- [x] App.tsx에 `/flashcard` 라우트 추가
+- [x] Navigation 컴포넌트에 "플래시 카드" 메뉴 추가
+  - [x] 단어 관리와 시험 메뉴 사이에 배치
+
+### 4.9.6 통계 독립성 확인
+- [x] 플래시 카드는 통계에 영향을 주지 않음 (updateStats 호출 없음)
+- [x] 시험/복습 기능만 통계 업데이트
+
+---
+
 ## Phase 5: 복습 시스템 (Phase 4.8로 통합됨)
 
 ### 5.1 복습 단어 선택 알고리즘

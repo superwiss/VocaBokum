@@ -1,6 +1,8 @@
 import { Word } from '@/types/word'
+import { VocabularyBook } from '@/types/vocabularyBook'
 
 const STORAGE_KEY = 'vocabokum_words'
+const BOOKS_STORAGE_KEY = 'vocabokum_vocabulary_books'
 
 export const storageService = {
   /**
@@ -69,7 +71,7 @@ export const storageService = {
    */
   getWordsByDate(date: string): Word[] {
     const words = this.loadWords()
-    return words.filter((w) => w.addedDate.startsWith(date))
+    return words.filter((w) => w.addedDate?.startsWith(date))
   },
 
   /**
@@ -160,7 +162,7 @@ export const storageService = {
   resetStatsByDate(date: string): void {
     const words = this.loadWords()
     const resetWords = words.map((word) => {
-      if (word.addedDate.startsWith(date)) {
+      if (word.addedDate?.startsWith(date)) {
         return {
           ...word,
           stats: {
@@ -205,5 +207,126 @@ export const storageService = {
     } else {
       throw new Error('단어를 찾을 수 없습니다.')
     }
+  },
+
+  // ============================================
+  // VocabularyBook 관련 함수들
+  // ============================================
+
+  /**
+   * 모든 단어장을 로컬 스토리지에 저장
+   */
+  saveVocabularyBooks(books: VocabularyBook[]): void {
+    try {
+      localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(books))
+    } catch (error) {
+      console.error('Failed to save vocabulary books to localStorage:', error)
+      throw new Error('단어장 저장에 실패했습니다.')
+    }
+  },
+
+  /**
+   * 로컬 스토리지에서 모든 단어장 불러오기
+   */
+  loadVocabularyBooks(): VocabularyBook[] {
+    try {
+      const data = localStorage.getItem(BOOKS_STORAGE_KEY)
+      if (!data) return []
+
+      const books = JSON.parse(data)
+      return Array.isArray(books) ? books : []
+    } catch (error) {
+      console.error('Failed to load vocabulary books from localStorage:', error)
+      return []
+    }
+  },
+
+  /**
+   * 단어장 추가
+   */
+  addVocabularyBook(book: VocabularyBook): void {
+    const books = this.loadVocabularyBooks()
+    books.push(book)
+    this.saveVocabularyBooks(books)
+  },
+
+  /**
+   * 단어장 업데이트
+   */
+  updateVocabularyBook(updatedBook: VocabularyBook): void {
+    const books = this.loadVocabularyBooks()
+    const index = books.findIndex((b) => b.id === updatedBook.id)
+
+    if (index !== -1) {
+      books[index] = updatedBook
+      this.saveVocabularyBooks(books)
+    } else {
+      throw new Error('단어장을 찾을 수 없습니다.')
+    }
+  },
+
+  /**
+   * 단어장 삭제 (해당 단어장의 모든 단어도 함께 삭제)
+   */
+  deleteVocabularyBook(bookId: string): void {
+    // 단어장 삭제
+    const books = this.loadVocabularyBooks()
+    const filteredBooks = books.filter((b) => b.id !== bookId)
+    this.saveVocabularyBooks(filteredBooks)
+
+    // 해당 단어장의 모든 단어 삭제
+    const words = this.loadWords()
+    const filteredWords = words.filter((w) => w.vocabularyBookId !== bookId)
+    this.saveWords(filteredWords)
+  },
+
+  /**
+   * ID로 단어장 가져오기
+   */
+  getVocabularyBookById(bookId: string): VocabularyBook | undefined {
+    const books = this.loadVocabularyBooks()
+    return books.find((b) => b.id === bookId)
+  },
+
+  /**
+   * 특정 단어장의 단어들 가져오기
+   */
+  getWordsByVocabularyBookId(bookId: string): Word[] {
+    const words = this.loadWords()
+    return words.filter((w) => w.vocabularyBookId === bookId)
+  },
+
+  /**
+   * 여러 단어장의 단어들 가져오기
+   */
+  getWordsByVocabularyBookIds(bookIds: string[]): Word[] {
+    const words = this.loadWords()
+    return words.filter((w) => bookIds.includes(w.vocabularyBookId))
+  },
+
+  /**
+   * 단어장별 통계 데이터 리셋
+   */
+  resetStatsByVocabularyBook(bookId: string): void {
+    const words = this.loadWords()
+    const resetWords = words.map((word) => {
+      if (word.vocabularyBookId === bookId) {
+        return {
+          ...word,
+          stats: {
+            type1Attempts: 0,
+            type1Correct: 0,
+            type2Attempts: 0,
+            type2Correct: 0,
+            type3Attempts: 0,
+            type3Correct: 0,
+            type4Attempts: 0,
+            type4Correct: 0,
+          },
+        }
+      }
+      return word
+    })
+    this.saveWords(resetWords)
   },
 }

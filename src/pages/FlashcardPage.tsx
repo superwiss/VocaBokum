@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWords } from '@/hooks/useWords';
 import { FlashcardType, FlashcardItem } from '@/types/flashcard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import DateRangeSelector from '@/components/quiz/DateRangeSelector';
+import { VocabularyBookSelector } from '@/components/vocabulary/VocabularyBookSelector';
 import { FlashcardTypeSelector } from '@/components/flashcard/FlashcardTypeSelector';
 import { FlashcardDisplay } from '@/components/flashcard/FlashcardDisplay';
 import { FlashcardComplete } from '@/components/flashcard/FlashcardComplete';
@@ -14,11 +14,12 @@ type Step = 'setup' | 'learning' | 'complete';
 
 export default function FlashcardPage() {
   const navigate = useNavigate();
-  const { getWordsByDateRange, getLatestWordDate } = useWords();
+  const { vocabularyBooks, getWordsByVocabularyBookIds } = useWords();
 
   // 설정 상태
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [selectedBookIds, setSelectedBookIds] = useState<string[]>(
+    vocabularyBooks.length > 0 ? [vocabularyBooks[0].id] : []
+  );
   const [selectedTypes, setSelectedTypes] = useState<FlashcardType[]>([1]);
 
   // 학습 상태
@@ -35,21 +36,12 @@ export default function FlashcardPage() {
     type3: 0,
   });
 
-  // 초기 날짜 설정
-  useEffect(() => {
-    const latestDate = getLatestWordDate();
-    if (latestDate) {
-      setStartDate(latestDate);
-      setEndDate(latestDate);
-    }
-  }, [getLatestWordDate]);
-
   // 학습 시작
   const handleStartLearning = () => {
-    const words = getWordsByDateRange(startDate, endDate);
+    const words = getWordsByVocabularyBookIds(selectedBookIds);
 
     if (words.length === 0) {
-      alert('선택한 날짜 범위에 단어가 없습니다.');
+      alert('선택한 단어장에 단어가 없습니다.');
       return;
     }
 
@@ -124,7 +116,7 @@ export default function FlashcardPage() {
 
   // 설정 단계 렌더링
   if (step === 'setup') {
-    const words = getWordsByDateRange(startDate, endDate);
+    const words = getWordsByVocabularyBookIds(selectedBookIds);
     const totalCards = words.length * selectedTypes.length;
 
     return (
@@ -137,41 +129,51 @@ export default function FlashcardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* 날짜 범위 선택 */}
-            <DateRangeSelector
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-              wordCount={words.length}
-            />
-
-            {/* 유형 선택 */}
-            <FlashcardTypeSelector
-              selectedTypes={selectedTypes}
-              onTypesChange={setSelectedTypes}
-            />
-
-            {/* 학습 정보 */}
-            <div className="rounded-lg bg-muted p-4">
-              <h3 className="mb-2 text-sm font-semibold">학습 정보</h3>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p>• 선택한 단어 수: {words.length}개</p>
-                <p>• 총 학습할 문제 수: {totalCards}개</p>
-                <p>• 채점 방식: 즉시 확인 (고정)</p>
-                <p>• 키보드 단축키: O (외웠음), X (모름)</p>
+            {vocabularyBooks.length === 0 ? (
+              <div className="rounded-lg bg-muted p-4">
+                <p className="text-center text-muted-foreground mb-4">
+                  등록된 단어장이 없습니다. 먼저 단어장을 만들어주세요.
+                </p>
+                <Button onClick={() => navigate('/vocabulary-books')} className="w-full">
+                  단어장 만들러 가기
+                </Button>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* 단어장 선택 */}
+                <VocabularyBookSelector
+                  selectedBookIds={selectedBookIds}
+                  onSelectionChange={setSelectedBookIds}
+                />
 
-            {/* 학습 시작 버튼 */}
-            <Button
-              onClick={handleStartLearning}
-              className="w-full"
-              size="lg"
-              disabled={words.length === 0 || selectedTypes.length === 0}
-            >
-              학습 시작
-            </Button>
+                {/* 유형 선택 */}
+                <FlashcardTypeSelector
+                  selectedTypes={selectedTypes}
+                  onTypesChange={setSelectedTypes}
+                />
+
+                {/* 학습 정보 */}
+                <div className="rounded-lg bg-muted p-4">
+                  <h3 className="mb-2 text-sm font-semibold">학습 정보</h3>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <p>• 선택한 단어 수: {words.length}개</p>
+                    <p>• 총 학습할 문제 수: {totalCards}개</p>
+                    <p>• 채점 방식: 즉시 확인 (고정)</p>
+                    <p>• 키보드 단축키: O (외웠음), X (모름)</p>
+                  </div>
+                </div>
+
+                {/* 학습 시작 버튼 */}
+                <Button
+                  onClick={handleStartLearning}
+                  className="w-full"
+                  size="lg"
+                  disabled={words.length === 0 || selectedTypes.length === 0}
+                >
+                  학습 시작
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

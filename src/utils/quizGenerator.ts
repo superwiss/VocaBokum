@@ -45,18 +45,18 @@ export function generateQuiz(words: Word[], selectedTypes: QuestionType[] = [1, 
  */
 export function generateTodayQuiz(words: Word[], selectedTypes: QuestionType[] = [1, 2, 3, 4]): QuizQuestion[] {
   const today = new Date().toISOString().split('T')[0]
-  const todayWords = words.filter((w) => w.addedDate.startsWith(today))
+  const todayWords = words.filter((w) => w.addedDate?.startsWith(today))
   return generateQuiz(todayWords, selectedTypes)
 }
 
 /**
- * 복습용 퀴즈 생성 (각 단어당 1개 유형만 랜덤 선택)
+ * 복습용 퀴즈 생성 (가중치 기반 문제 생성)
  * @param words 복습할 단어 목록
- * @param count 복습 문제 수
+ * @param count 생성할 문제 수
  * @param selectedTypes 선택된 문제 유형 (기본값: 모든 유형)
  */
 export function generateReviewQuiz(words: Word[], count: number, selectedTypes: QuestionType[] = [1, 2, 3, 4]): QuizQuestion[] {
-  if (words.length === 0) return []
+  if (words.length === 0 || selectedTypes.length === 0) return []
 
   // 오답률 기반 가중치 계산
   const wordsWithWeight = words.map((word) => {
@@ -71,42 +71,40 @@ export function generateReviewQuiz(words: Word[], count: number, selectedTypes: 
     return { word, weight: Math.max(0.1, weight) } // 최소 가중치 0.1
   })
 
-  // 가중치 기반 랜덤 선택
-  const selectedWords: Word[] = []
-  const availableWords = [...wordsWithWeight]
+  // 최대 문제 수는 단어 수 × 유형 수
+  const maxQuestions = words.length * selectedTypes.length
+  const questionCount = Math.min(count, maxQuestions)
 
-  for (let i = 0; i < Math.min(count, words.length); i++) {
+  // 가중치 기반으로 문제 생성 (중복 가능)
+  const questions: QuizQuestion[] = []
+
+  for (let i = 0; i < questionCount; i++) {
     // 가중치 합계 계산
-    const totalWeight = availableWords.reduce((sum, item) => sum + item.weight, 0)
+    const totalWeight = wordsWithWeight.reduce((sum, item) => sum + item.weight, 0)
 
     // 랜덤 값 생성
     let random = Math.random() * totalWeight
 
     // 가중치 기반으로 단어 선택
-    let selectedIndex = 0
-    for (let j = 0; j < availableWords.length; j++) {
-      random -= availableWords[j].weight
+    let selectedWord = wordsWithWeight[0].word
+    for (let j = 0; j < wordsWithWeight.length; j++) {
+      random -= wordsWithWeight[j].weight
       if (random <= 0) {
-        selectedIndex = j
+        selectedWord = wordsWithWeight[j].word
         break
       }
     }
 
-    selectedWords.push(availableWords[selectedIndex].word)
-    availableWords.splice(selectedIndex, 1)
-  }
-
-  // 각 선택된 단어에 대해 선택된 유형 중 1개의 랜덤 유형 생성
-  const questions: QuizQuestion[] = selectedWords.map((word) => {
+    // 선택된 유형 중 랜덤으로 1개 선택
     const randomType = selectedTypes[Math.floor(Math.random() * selectedTypes.length)]
 
-    return {
-      id: `${word.id}-type${randomType}-${Date.now()}-${Math.random()}`,
-      wordId: word.id,
+    questions.push({
+      id: `${selectedWord.id}-type${randomType}-${Date.now()}-${Math.random()}-${i}`,
+      wordId: selectedWord.id,
       type: randomType,
-      word,
-    }
-  })
+      word: selectedWord,
+    })
+  }
 
   return shuffleArray(questions)
 }

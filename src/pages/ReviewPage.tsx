@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWords } from '@/hooks/useWords'
-import { generateTodayQuiz, generateReviewQuiz } from '@/utils/quizGenerator'
+import { generateQuiz, generateReviewQuiz } from '@/utils/quizGenerator'
 import { validateAnswer } from '@/utils/answerValidator'
 import { QuizQuestion, QuizResult as QuizResultType } from '@/types/quiz'
 import { QuestionType } from '@/types/word'
@@ -11,7 +11,7 @@ import Type3Question from '@/components/quiz/Type3Question'
 import QuizResult from '@/components/quiz/QuizResult'
 import QuizTypeSelector from '@/components/quiz/QuizTypeSelector'
 import GradingModeSelector, { GradingMode } from '@/components/quiz/GradingModeSelector'
-import DateRangeSelector from '@/components/quiz/DateRangeSelector'
+import { VocabularyBookSelector } from '@/components/vocabulary/VocabularyBookSelector'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,12 +19,12 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 
 export default function ReviewPage() {
-  const { getWordsByDateRange, getLatestWordDate, updateStats } = useWords()
+  const { vocabularyBooks, getWordsByVocabularyBookIds, updateStats } = useWords()
 
-  // 기본값: 가장 최근 단어 등록 날짜
-  const latestDate = getLatestWordDate()
-  const [startDate, setStartDate] = useState(latestDate)
-  const [endDate, setEndDate] = useState(latestDate)
+  // 기본값: 첫 번째 단어장 선택
+  const [selectedBookIds, setSelectedBookIds] = useState<string[]>(
+    vocabularyBooks.length > 0 ? [vocabularyBooks[0].id] : []
+  )
   const [selectedTypes, setSelectedTypes] = useState<QuestionType[]>([2, 4])
   const [gradingMode, setGradingMode] = useState<GradingMode>('immediate')
   const [useQuestionLimit, setUseQuestionLimit] = useState(false)
@@ -39,27 +39,27 @@ export default function ReviewPage() {
     correctAnswer: string | string[]
   } | null>(null)
 
-  const dateRangeWords = getWordsByDateRange(startDate, endDate)
+  const selectedWords = getWordsByVocabularyBookIds(selectedBookIds)
 
-  // 날짜 범위가 변경되면 문제 수를 단어 개수 이하로 조정
+  // 선택된 단어장 또는 선택된 유형이 변경되면 문제 수를 최대 문제 수 이하로 조정
   useEffect(() => {
-    if (questionLimit > dateRangeWords.length) {
-      setQuestionLimit(Math.max(1, dateRangeWords.length))
+    const maxQuestions = selectedWords.length * selectedTypes.length
+    if (questionLimit > maxQuestions) {
+      setQuestionLimit(Math.max(1, maxQuestions))
     }
-  }, [startDate, endDate, dateRangeWords.length])
+  }, [selectedBookIds, selectedWords.length, selectedTypes.length, questionLimit])
 
   const startQuiz = () => {
-    if (dateRangeWords.length === 0) return
+    if (selectedWords.length === 0) return
 
     let quiz: QuizQuestion[]
 
     if (useQuestionLimit && questionLimit > 0) {
       // 문제 수 제한이 있는 경우: 가중치 기반 랜덤 선택
-      const count = Math.min(questionLimit, dateRangeWords.length)
-      quiz = generateReviewQuiz(dateRangeWords, count, selectedTypes)
+      quiz = generateReviewQuiz(selectedWords, questionLimit, selectedTypes)
     } else {
       // 문제 수 제한이 없는 경우: 모든 단어 * 선택된 유형
-      quiz = generateTodayQuiz(dateRangeWords, selectedTypes)
+      quiz = generateQuiz(selectedWords, selectedTypes)
     }
 
     setQuestions(quiz)
@@ -161,15 +161,26 @@ export default function ReviewPage() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">시험</h1>
           <p className="text-muted-foreground">
-            원하는 날짜 범위의 단어로 시험을 보세요.
+            원하는 단어장을 선택하여 시험을 보세요.
           </p>
         </div>
 
-        {dateRangeWords.length === 0 ? (
+        {vocabularyBooks.length === 0 ? (
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-muted-foreground mb-4">
-                선택한 날짜 범위에 등록된 단어가 없습니다.
+                등록된 단어장이 없습니다. 먼저 단어장을 만들어주세요.
+              </p>
+              <Button onClick={() => (window.location.href = '/vocabulary-books')} className="w-full">
+                단어장 만들러 가기
+              </Button>
+            </CardContent>
+          </Card>
+        ) : selectedWords.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-center text-muted-foreground mb-4">
+                선택한 단어장에 등록된 단어가 없습니다.
               </p>
               <Button onClick={() => (window.location.href = '/words')} className="w-full">
                 단어 추가하러 가기
@@ -178,12 +189,9 @@ export default function ReviewPage() {
           </Card>
         ) : (
           <div className="space-y-6">
-            <DateRangeSelector
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-              wordCount={dateRangeWords.length}
+            <VocabularyBookSelector
+              selectedBookIds={selectedBookIds}
+              onSelectionChange={setSelectedBookIds}
             />
 
             <QuizTypeSelector
@@ -214,23 +222,24 @@ export default function ReviewPage() {
                       id="count"
                       type="number"
                       min={1}
-                      max={dateRangeWords.length}
+                      max={selectedWords.length * selectedTypes.length}
                       value={questionLimit}
                       onChange={(e) => {
                         const value = Number(e.target.value)
-                        // 단어 개수를 초과하지 않도록 제한
-                        setQuestionLimit(Math.min(value, dateRangeWords.length))
+                        const maxQuestions = selectedWords.length * selectedTypes.length
+                        // 최대 문제 수를 초과하지 않도록 제한
+                        setQuestionLimit(Math.min(value, maxQuestions))
                       }}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      최대 {dateRangeWords.length}개 (틀린 단어 우선 출제)
+                      최대 {selectedWords.length * selectedTypes.length}개 (틀린 단어 우선 출제)
                     </p>
                   </div>
                 )}
 
                 {!useQuestionLimit && (
                   <p className="text-sm text-muted-foreground">
-                    예상 문제 수: {dateRangeWords.length * selectedTypes.length}개
+                    예상 문제 수: {selectedWords.length * selectedTypes.length}개
                     (모든 단어 × 선택된 유형)
                   </p>
                 )}
@@ -246,7 +255,7 @@ export default function ReviewPage() {
               onClick={startQuiz}
               className="w-full"
               size="lg"
-              disabled={useQuestionLimit && (questionLimit < 1 || questionLimit > dateRangeWords.length)}
+              disabled={useQuestionLimit && (questionLimit < 1 || questionLimit > selectedWords.length * selectedTypes.length)}
             >
               시험 시작
             </Button>

@@ -15,36 +15,42 @@ import {
 } from '@/components/ui/alert-dialog'
 
 export default function AdminPage() {
-  const { words } = useWords()
+  const { words, vocabularyBooks } = useWords()
   const { dispatch } = useWordContext()
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
 
   // 리셋 다이얼로그 상태
   const [resetDialog, setResetDialog] = useState<{
     open: boolean
-    type: 'all' | 'date' | 'word'
-    date?: string
+    type: 'all' | 'book' | 'word'
+    bookId?: string
+    bookName?: string
     wordId?: string
     wordName?: string
   }>({ open: false, type: 'all' })
 
-  // 날짜별로 단어 그룹화
-  const wordsByDate = useMemo(() => {
+  // 단어장별로 단어 그룹화
+  const wordsByBook = useMemo(() => {
     const grouped = new Map<string, typeof words>()
 
     words.forEach((word) => {
-      const date = word.addedDate.split('T')[0]
-      if (!grouped.has(date)) {
-        grouped.set(date, [])
+      const bookId = word.vocabularyBookId
+      if (!grouped.has(bookId)) {
+        grouped.set(bookId, [])
       }
-      grouped.get(date)!.push(word)
+      grouped.get(bookId)!.push(word)
     })
 
-    // 날짜 역순 정렬 (최신순)
+    // 단어장 생성일 기준으로 역순 정렬 (최신순)
     return new Map(
-      Array.from(grouped.entries()).sort((a, b) => b[0].localeCompare(a[0]))
+      Array.from(grouped.entries()).sort((a, b) => {
+        const bookA = vocabularyBooks.find(book => book.id === a[0])
+        const bookB = vocabularyBooks.find(book => book.id === b[0])
+        if (!bookA || !bookB) return 0
+        return bookB.createdDate.localeCompare(bookA.createdDate)
+      })
     )
-  }, [words])
+  }, [words, vocabularyBooks])
 
   // 전체 통계 계산
   const overallStats = useMemo(() => {
@@ -119,15 +125,16 @@ export default function AdminPage() {
     return { totalAttempts, totalCorrect, overallRate, type1Rate, type2Rate, type3Rate, type4Rate }
   }
 
-  // 선택된 날짜의 단어들
-  const selectedWords = selectedDate ? wordsByDate.get(selectedDate) || [] : []
+  // 선택된 단어장의 단어들
+  const selectedWords = selectedBookId ? wordsByBook.get(selectedBookId) || [] : []
+  const selectedBook = selectedBookId ? vocabularyBooks.find(book => book.id === selectedBookId) : null
 
   // 리셋 핸들러
   const handleResetConfirm = () => {
     if (resetDialog.type === 'all') {
       dispatch({ type: 'RESET_ALL_STATS' })
-    } else if (resetDialog.type === 'date' && resetDialog.date) {
-      dispatch({ type: 'RESET_DATE_STATS', payload: resetDialog.date })
+    } else if (resetDialog.type === 'book' && resetDialog.bookId) {
+      dispatch({ type: 'RESET_VOCABULARY_BOOK_STATS', payload: resetDialog.bookId })
     } else if (resetDialog.type === 'word' && resetDialog.wordId) {
       dispatch({ type: 'RESET_WORD_STATS', payload: resetDialog.wordId })
     }
@@ -139,8 +146,8 @@ export default function AdminPage() {
     setResetDialog({ open: true, type: 'all' })
   }
 
-  const openResetDateDialog = (date: string) => {
-    setResetDialog({ open: true, type: 'date', date })
+  const openResetBookDialog = (bookId: string, bookName: string) => {
+    setResetDialog({ open: true, type: 'book', bookId, bookName })
   }
 
   const openResetWordDialog = (wordId: string, wordName: string) => {
@@ -220,47 +227,51 @@ export default function AdminPage() {
         </CardContent>
       </Card>
 
-      {/* 날짜별 단어 목록 */}
+      {/* 단어장별 단어 목록 */}
       <Card>
         <CardHeader>
-          <CardTitle>날짜별 단어 목록</CardTitle>
-          <CardDescription>날짜를 선택하여 해당 날짜에 추가된 단어들의 통계를 확인하세요.</CardDescription>
+          <CardTitle>단어장별 단어 목록</CardTitle>
+          <CardDescription>단어장을 선택하여 해당 단어장의 단어들의 통계를 확인하세요.</CardDescription>
         </CardHeader>
         <CardContent>
-          {wordsByDate.size === 0 ? (
-            <p className="text-center text-muted-foreground py-8">등록된 단어가 없습니다.</p>
+          {vocabularyBooks.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">등록된 단어장이 없습니다.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {/* 날짜 목록 */}
+              {/* 단어장 목록 */}
               <div className="space-y-2 max-h-96 overflow-y-auto border rounded p-4">
-                <h3 className="font-semibold mb-3">날짜 목록</h3>
-                {Array.from(wordsByDate.entries()).map(([date, dateWords]) => (
-                  <Button
-                    key={date}
-                    variant={selectedDate === date ? 'default' : 'outline'}
-                    className="w-full justify-start"
-                    onClick={() => setSelectedDate(date)}
-                  >
-                    <div className="flex justify-between w-full">
-                      <span>{date}</span>
-                      <span className="text-muted-foreground">{dateWords.length}개</span>
-                    </div>
-                  </Button>
-                ))}
+                <h3 className="font-semibold mb-3">단어장 목록</h3>
+                {Array.from(wordsByBook.entries()).map(([bookId, bookWords]) => {
+                  const book = vocabularyBooks.find(b => b.id === bookId)
+                  if (!book) return null
+                  return (
+                    <Button
+                      key={bookId}
+                      variant={selectedBookId === bookId ? 'default' : 'outline'}
+                      className="w-full justify-start"
+                      onClick={() => setSelectedBookId(bookId)}
+                    >
+                      <div className="flex justify-between w-full">
+                        <span>{book.title}</span>
+                        <span className="text-muted-foreground">{bookWords.length}개</span>
+                      </div>
+                    </Button>
+                  )
+                })}
               </div>
 
-              {/* 선택된 날짜의 단어 통계 */}
+              {/* 선택된 단어장의 단어 통계 */}
               <div className="border rounded p-4 max-h-96 overflow-y-auto">
-                {selectedDate ? (
+                {selectedBookId && selectedBook ? (
                   <>
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-semibold">{selectedDate} 단어 통계</h3>
+                      <h3 className="font-semibold">{selectedBook.title} 단어 통계</h3>
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => openResetDateDialog(selectedDate)}
+                        onClick={() => openResetBookDialog(selectedBook.id, selectedBook.title)}
                       >
-                        날짜 리셋
+                        단어장 리셋
                       </Button>
                     </div>
                     <div className="space-y-3">
@@ -327,7 +338,7 @@ export default function AdminPage() {
                   </>
                 ) : (
                   <p className="text-center text-muted-foreground py-12">
-                    날짜를 선택하여 단어 통계를 확인하세요.
+                    단어장을 선택하여 단어 통계를 확인하세요.
                   </p>
                 )}
               </div>
@@ -349,9 +360,9 @@ export default function AdminPage() {
                   단어는 삭제되지 않으며, 통계 데이터만 0으로 리셋됩니다.
                 </>
               )}
-              {resetDialog.type === 'date' && (
+              {resetDialog.type === 'book' && (
                 <>
-                  <strong>{resetDialog.date}</strong>에 등록된 모든 단어의 통계 데이터를 초기화합니다.
+                  <strong>{resetDialog.bookName}</strong> 단어장의 모든 단어 통계 데이터를 초기화합니다.
                   <br />
                   단어는 삭제되지 않으며, 통계 데이터만 0으로 리셋됩니다.
                 </>

@@ -15,7 +15,8 @@ export interface Word {
   meanings: string[]
   pronunciation: string
   audioUrl?: string // Optional: 실제 오디오 파일 URL (Free Dictionary API)
-  addedDate: string // ISO 8601 format
+  vocabularyBookId: string // 단어장 ID
+  addedDate?: string // ISO 8601 format - 마이그레이션을 위해 optional 유지
   stats: WordStats
 }
 

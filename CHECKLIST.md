@@ -66,7 +66,9 @@
     word: string;
     meanings: string[];
     pronunciation: string;
-    addedDate: string; // ISO 8601
+    vocabularyBookId: string; // 단어장 ID (필수)
+    addedDate?: string; // ISO 8601 (옵션, 마이그레이션 호환성)
+    audioUrl?: string; // 오디오 URL (옵션)
     stats: {
       type1Attempts: number;
       type1Correct: number;
@@ -77,6 +79,15 @@
       type4Attempts: number;
       type4Correct: number;
     };
+  }
+  ```
+- [x] `/types/vocabularyBook.ts` 생성
+  ```typescript
+  interface VocabularyBook {
+    id: string;
+    title: string;
+    createdDate: string; // ISO 8601
+    description?: string;
   }
   ```
 - [x] `/types/quiz.ts` 생성
@@ -106,6 +117,24 @@
   - [x] `exportWords(): string` (JSON)
   - [x] `importWords(json: string): Word[]`
   - [x] 에러 처리 및 데이터 유효성 검증
+  - [x] 단어장 관련 함수 추가
+    - [x] `saveVocabularyBooks(books: VocabularyBook[]): void`
+    - [x] `loadVocabularyBooks(): VocabularyBook[]`
+    - [x] `addVocabularyBook(book: VocabularyBook): void`
+    - [x] `updateVocabularyBook(book: VocabularyBook): void`
+    - [x] `deleteVocabularyBook(id: string): void`
+    - [x] `getVocabularyBookById(id: string): VocabularyBook | undefined`
+    - [x] `getWordsByVocabularyBookId(bookId: string): Word[]`
+    - [x] `getWordsByVocabularyBookIds(bookIds: string[]): Word[]`
+    - [x] `resetStatsByVocabularyBook(bookId: string): void`
+
+### 2.2.1 데이터 마이그레이션 서비스
+- [x] `/services/migrationService.ts` 생성
+  - [x] `needsMigration(): boolean` - 마이그레이션 필요 여부 확인
+  - [x] `migrateFromDateBased(): MigrationResult` - 날짜 기반 → 단어장 기반 자동 변환
+  - [x] 날짜별로 단어장 생성 (예: "2024-01-15 단어장")
+  - [x] 모든 기존 단어에 vocabularyBookId 할당
+  - [x] 날짜 없는 단어 처리 (기본 단어장에 할당)
 
 ### 2.3 상태 관리
 - [x] `/contexts/WordContext.tsx` 생성
@@ -273,24 +302,24 @@
   - [x] 피드백 화면에서 엔터키로 다음 문제 이동
   - [x] 즉시 채점 모드에서 실시간 점수 표시 (현재 점수 / 푼 문제 수)
 
-### 4.8 시험 기능 통합 (오늘 시험 + 복습 통합)
-- [x] `/components/quiz/DateRangeSelector.tsx` 생성
-  - [x] 시작 날짜 선택 input
-  - [x] 종료 날짜 선택 input
-  - [x] 기본값: 가장 최근 단어 등록 날짜
-  - [x] 선택한 날짜 범위의 단어 개수 표시
+### 4.8 시험 기능 통합 (오늘 시험 + 복습 통합) - 단어장 기반 시스템으로 변경됨
+- [x] `/components/vocabulary/VocabularyBookSelector.tsx` 생성
+  - [x] 단어장 멀티 셀렉트 UI
+  - [x] 기본값: 첫 번째 단어장 선택
+  - [x] 선택한 단어장의 단어 개수 표시
   - [x] 사용 팁 안내 메시지
 - [x] `/hooks/useWords.ts` 업데이트
-  - [x] `getWordsByDateRange(startDate, endDate)` 함수 추가
-  - [x] `getLatestWordDate()` 함수 추가
+  - [x] `getWordsByVocabularyBookIds(bookIds: string[])` 함수 추가
+  - [x] 단어장별 단어 필터링 지원
 - [x] `/pages/ReviewPage.tsx`를 통합 시험 페이지로 업데이트
   - [x] 페이지 제목을 "복습" → "시험"으로 변경
-  - [x] DateRangeSelector 컴포넌트 통합
-  - [x] 날짜 범위 상태 관리
-  - [x] 선택한 날짜 범위의 단어 필터링
+  - [x] VocabularyBookSelector 컴포넌트 통합
+  - [x] 선택한 단어장 상태 관리
+  - [x] 선택한 단어장의 단어 필터링
   - [x] 문제 수 제한 옵션 추가 (체크박스로 선택)
   - [x] 문제 수 제한 없을 때: 모든 단어 * 선택된 유형
   - [x] 문제 수 제한 있을 때: 가중치 기반 랜덤 선택
+  - [x] 퀴즈 생성 로직을 generateQuiz로 수정 (날짜 필터링 제거)
 - [x] App.tsx 라우팅 업데이트
   - [x] /quiz → ReviewPage 연결
   - [x] /review → /quiz로 리다이렉트
@@ -305,10 +334,10 @@
 
 ### 4.9.1 플래시 카드 페이지
 - [x] `/pages/FlashcardPage.tsx` 생성
-  - [x] 초기 설정 UI (날짜 범위, 유형 선택)
-  - [x] DateRangeSelector 컴포넌트 재사용
+  - [x] 초기 설정 UI (단어장 선택, 유형 선택)
+  - [x] VocabularyBookSelector 컴포넌트 사용 (단어장 멀티 셀렉트)
   - [x] FlashcardTypeSelector 컴포넌트 사용 (3가지 유형 전용)
-  - [x] 기본값: 유형 1 선택
+  - [x] 기본값: 첫 번째 단어장 + 유형 1 선택
   - [x] 채점 방식은 항상 즉시 채점 모드 (UI 제거)
   - [x] 문제 수 선택 UI 제거 (모든 단어 학습)
   - [x] "학습 시작" 버튼
@@ -419,10 +448,10 @@
 - [x] 전체 통계 표시
   - [x] 총 단어 수, 전체 시도, 정답 수, 전체 정답률
   - [x] 유형별 정답률 (Type 1, 2, 3, 4)
-- [x] 날짜별 단어 목록
-  - [x] 날짜 선택 UI
-  - [x] 해당 날짜에 추가된 단어 목록 표시
-  - [x] 각 날짜별 단어 개수
+- [x] 단어장별 단어 목록
+  - [x] 단어장 선택 UI
+  - [x] 해당 단어장의 단어 목록 표시
+  - [x] 각 단어장별 단어 개수
 - [x] 단어별 통계
   - [x] 단어별 상세 정보 표시 (단어, 뜻)
   - [x] 유형1 합격률, 유형2 합격률, 유형3 합격률, 유형4 합격률, 전체 합격률
@@ -431,19 +460,19 @@
   - [x] 전체 리셋 기능
     - [x] 모든 단어의 통계 데이터 초기화 (attempts, correct → 0)
     - [x] 확인 다이얼로그로 안전장치 구현
-  - [x] 날짜별 리셋 기능
-    - [x] 선택한 날짜의 모든 단어 통계 초기화
+  - [x] 단어장별 리셋 기능
+    - [x] 선택한 단어장의 모든 단어 통계 초기화
     - [x] 확인 다이얼로그로 안전장치 구현
   - [x] 단어별 리셋 기능
     - [x] 개별 단어의 통계 데이터만 초기화
     - [x] 확인 다이얼로그로 안전장치 구현
   - [x] storageService에 리셋 함수 추가
     - [x] `resetAllStats(): void`
-    - [x] `resetStatsByDate(date: string): void`
+    - [x] `resetStatsByVocabularyBook(bookId: string): void`
     - [x] `resetWordStats(wordId: string): void`
   - [x] WordContext에 리셋 액션 추가
     - [x] RESET_ALL_STATS
-    - [x] RESET_DATE_STATS
+    - [x] RESET_BOOK_STATS
     - [x] RESET_WORD_STATS
 - [ ] 선택적: 차트 시각화 (향후 개선)
   - [ ] recharts 또는 chart.js 설치
@@ -546,7 +575,7 @@
 ## 선택적 개선 사항
 
 ### 고급 기능
-- [ ] 단어장 기능 (여러 단어장 생성 및 관리)
+- [x] 단어장 기능 (여러 단어장 생성 및 관리) ✅ 완료
 - [ ] 단어 검색 기능
 - [ ] 단어 편집 기능
 - [ ] 학습 통계 그래프 (일별, 주별, 월별)

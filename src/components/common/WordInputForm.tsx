@@ -7,7 +7,11 @@ import { useWords } from '@/hooks/useWords'
 import { dictionaryService } from '@/services/dictionaryService'
 import { toast } from 'sonner'
 
-export default function WordInputForm() {
+interface WordInputFormProps {
+  vocabularyBookId: string
+}
+
+export default function WordInputForm({ vocabularyBookId }: WordInputFormProps) {
   const [word, setWord] = useState('')
   const [meanings, setMeanings] = useState('')
   const [loading, setLoading] = useState(false)
@@ -68,7 +72,7 @@ export default function WordInputForm() {
         meanings: meaningsList,
         pronunciation: result.pronunciation,
         audioUrl: result.audioUrl,
-        addedDate: new Date().toISOString(),
+        vocabularyBookId,
         stats: {
           type1Attempts: 0,
           type1Correct: 0,

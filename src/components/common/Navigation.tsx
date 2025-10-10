@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { path: '/', label: '홈' },
+  { path: '/vocabulary-books', label: '단어장' },
   { path: '/words', label: '단어 관리' },
   { path: '/flashcard', label: '플래시 카드' },
   { path: '/quiz', label: '시험' },

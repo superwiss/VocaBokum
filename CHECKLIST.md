@@ -119,7 +119,7 @@
   - [x] 에러 처리 및 데이터 유효성 검증
   - [x] 단어장 관련 함수 추가
     - [x] `saveVocabularyBooks(books: VocabularyBook[]): void`
-    - [x] `loadVocabularyBooks(): VocabularyBook[]`
+    - [x] `loadVocabularyBooks(): VocabularyBook[]` - 최신순(createdDate 내림차순) 정렬 포함
     - [x] `addVocabularyBook(book: VocabularyBook): void`
     - [x] `updateVocabularyBook(book: VocabularyBook): void`
     - [x] `deleteVocabularyBook(id: string): void`

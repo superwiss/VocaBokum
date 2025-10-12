@@ -227,6 +227,7 @@ export const storageService = {
 
   /**
    * 로컬 스토리지에서 모든 단어장 불러오기
+   * 최신순(createdDate 내림차순)으로 정렬하여 반환
    */
   loadVocabularyBooks(): VocabularyBook[] {
     try {
@@ -234,7 +235,14 @@ export const storageService = {
       if (!data) return []
 
       const books = JSON.parse(data)
-      return Array.isArray(books) ? books : []
+      if (!Array.isArray(books)) return []
+
+      // 최신순으로 정렬 (createdDate 내림차순)
+      return books.sort((a, b) => {
+        const dateA = new Date(a.createdDate).getTime()
+        const dateB = new Date(b.createdDate).getTime()
+        return dateB - dateA // 내림차순 (최신이 먼저)
+      })
     } catch (error) {
       console.error('Failed to load vocabulary books from localStorage:', error)
       return []

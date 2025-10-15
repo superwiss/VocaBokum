@@ -144,8 +144,16 @@ function wordReducer(state: WordState, action: WordAction): WordState {
     case 'LOAD_VOCABULARY_BOOKS':
       return { ...state, vocabularyBooks: action.payload }
 
-    case 'ADD_VOCABULARY_BOOK':
-      return { ...state, vocabularyBooks: [...state.vocabularyBooks, action.payload] }
+    case 'ADD_VOCABULARY_BOOK': {
+      const newBooks = [...state.vocabularyBooks, action.payload]
+      // createdDate 기준 내림차순 정렬 (최신순 - 가장 최근 단어장이 맨 위)
+      newBooks.sort((a, b) => {
+        const dateA = new Date(a.createdDate).getTime()
+        const dateB = new Date(b.createdDate).getTime()
+        return dateB - dateA
+      })
+      return { ...state, vocabularyBooks: newBooks }
+    }
 
     case 'UPDATE_VOCABULARY_BOOK':
       return {

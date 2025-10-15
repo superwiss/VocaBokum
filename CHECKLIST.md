@@ -199,6 +199,16 @@
 - [x] 수정: WordContext의 ADD_VOCABULARY_BOOK 액션에서 추가 후 최신순 정렬 적용
 - [x] 테스트: 단어장 추가 후 새로고침 없이 맨 위에 표시되는지 확인 ✅
 
+### 3.5 단어 중복 체크 버그 수정 (단어장 격리)
+- [x] 문제: 서로 다른 단어장에 같은 영어 단어를 추가할 수 없음 (전역 중복 체크)
+  - 예: A 단어장에 "hello" 등록 후, B 단어장에 "hello" 추가 시도 → "이미 추가된 단어입니다" 에러
+- [x] 원인: WordInputForm.tsx의 중복 체크 로직이 전체 단어(words)를 대상으로 검사
+- [x] 수정: 같은 단어장(vocabularyBookId) 내에서만 중복 체크하도록 로직 수정
+  - WordInputForm.tsx 42-50번 줄 수정
+  - `words.some()` → `words.filter(w => w.vocabularyBookId === vocabularyBookId).some()`
+  - 에러 메시지도 "이 단어장에 이미 추가된 단어입니다."로 명확하게 변경
+- [x] 테스트: 서로 다른 단어장에 같은 단어 추가 가능한지 확인 ✅
+
 ---
 
 ## Phase 4: 시험 시스템

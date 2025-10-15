@@ -39,13 +39,13 @@ export default function WordInputForm({ vocabularyBookId }: WordInputFormProps) 
       return
     }
 
-    // 중복 체크
-    const isDuplicate = words.some(
-      (w) => w.word.toLowerCase() === trimmedWord.toLowerCase()
-    )
+    // 중복 체크 (같은 단어장 내에서만 체크)
+    const isDuplicate = words
+      .filter((w) => w.vocabularyBookId === vocabularyBookId)
+      .some((w) => w.word.toLowerCase() === trimmedWord.toLowerCase())
 
     if (isDuplicate) {
-      toast.error('이미 추가된 단어입니다.')
+      toast.error('이 단어장에 이미 추가된 단어입니다.')
       return
     }
 
